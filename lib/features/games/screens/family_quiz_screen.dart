@@ -793,8 +793,12 @@ class _FamilyQuizScreenState extends State<FamilyQuizScreen> {
     return GameExitGuard(
       gameInProgress: gameInProgress,
       child: Scaffold(
-        floatingActionButton: showSila
-            ? SilaGameCoachButton(
+        appBar: AppBar(
+          title: Text(strings.familyQuiz),
+          actions: [
+            if (showSila)
+              SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
                 tone: switch (_phase) {
                   _FamilyQuizPhase.answerReveal ||
                   _FamilyQuizPhase.roundSummary ||
@@ -802,9 +806,9 @@ class _FamilyQuizScreenState extends State<FamilyQuizScreen> {
                   _FamilyQuizPhase.finalResults => SilaGameCoachTone.winner,
                   _ => SilaGameCoachTone.play,
                 },
-              )
-            : null,
-        appBar: AppBar(title: Text(strings.familyQuiz)),
+              ),
+          ],
+        ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(

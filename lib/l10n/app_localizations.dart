@@ -974,7 +974,7 @@ abstract class AppLocalizations {
   /// No description provided for @weeklyChampionshipReward.
   ///
   /// In en, this message translates to:
-  /// **'Family Wish'**
+  /// **'+50 Tokens + Ranking Points'**
   String get weeklyChampionshipReward;
 
   /// No description provided for @monthlyCup.

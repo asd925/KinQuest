@@ -15,17 +15,21 @@ import '../../rewards/digital/equipped_digital_rewards.dart';
 /// the same recognizable personality without duplicating mascot logic.
 enum SilaGameCoachTone { play, thinking, celebrating, oops, winner }
 
+enum SilaGameCoachPlacement { floating, appBar }
+
 class SilaGameCoachButton extends StatelessWidget {
   const SilaGameCoachButton({
     super.key,
     this.message,
     this.tone = SilaGameCoachTone.play,
     this.resultScreen = false,
+    this.placement = SilaGameCoachPlacement.floating,
   });
 
   final String? message;
   final SilaGameCoachTone tone;
   final bool resultScreen;
+  final SilaGameCoachPlacement placement;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +41,7 @@ class SilaGameCoachButton extends StatelessWidget {
         message: message,
         tone: tone,
         resultScreen: resultScreen,
+        placement: placement,
       ),
     );
   }
@@ -91,6 +96,7 @@ class _CoachButton extends StatelessWidget {
     required this.rewards,
     required this.tone,
     required this.resultScreen,
+    required this.placement,
     this.message,
   });
 
@@ -98,6 +104,7 @@ class _CoachButton extends StatelessWidget {
   final String? message;
   final SilaGameCoachTone tone;
   final bool resultScreen;
+  final SilaGameCoachPlacement placement;
 
   @override
   Widget build(BuildContext context) {
@@ -132,12 +139,16 @@ class _CoachButton extends StatelessWidget {
       ),
     };
     final mediaQuery = MediaQuery.of(context);
+    final inAppBar = placement == SilaGameCoachPlacement.appBar;
     // A wide pill can cover score cards and replay buttons on phone result
     // screens. Keep the trophy reaction compact there, while retaining the
     // fully branded host card on tablets and desktops.
     final compactWinner =
-        tone == SilaGameCoachTone.winner && mediaQuery.size.width < 720;
+        !inAppBar &&
+        tone == SilaGameCoachTone.winner &&
+        mediaQuery.size.width < 720;
     final supportsPill =
+        !inAppBar &&
         !compactWinner &&
         mediaQuery.size.width >= 360 &&
         mediaQuery.textScaler.scale(1) <= 1.35;
@@ -183,7 +194,13 @@ class _CoachButton extends StatelessWidget {
             excludeFromSemantics: true,
             onTap: handleCoachTap,
             customBorder: shape,
-            child: showExpanded
+            child: inAppBar
+                ? _AppBarCoachButton(
+                    rewards: rewards,
+                    pose: pose,
+                    motion: motion,
+                  )
+                : showExpanded
                 ? _ExpandedCoachButton(
                     rewards: rewards,
                     message: coachMessage,
@@ -206,6 +223,13 @@ class _CoachButton extends StatelessWidget {
         ),
       ),
     );
+
+    if (inAppBar) {
+      return Padding(
+        padding: const EdgeInsetsDirectional.only(end: 4),
+        child: Center(child: coach),
+      );
+    }
 
     // Games commonly keep their main/replay actions at the bottom. Reserve
     // that action zone for every coach size, with extra room for result screens.
@@ -249,6 +273,43 @@ class _CoachButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AppBarCoachButton extends StatelessWidget {
+  const _AppBarCoachButton({
+    required this.rewards,
+    required this.pose,
+    required this.motion,
+  });
+
+  final EquippedDigitalRewards rewards;
+  final SilaMascotPose pose;
+  final SilaMascotMotion motion;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return SizedBox.square(
+      key: const ValueKey('sila-game-coach-app-bar'),
+      dimension: 48,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          _RecurringCoachMascot(
+            rewards: rewards,
+            height: 44,
+            pose: pose,
+            motion: motion,
+          ),
+          PositionedDirectional(
+            end: 1,
+            top: 1,
+            child: _CoachChatBadge(colors: colors, size: 18),
+          ),
+        ],
       ),
     );
   }
@@ -433,21 +494,26 @@ class _PhoneCoachButton extends StatelessWidget {
 }
 
 class _CoachChatBadge extends StatelessWidget {
-  const _CoachChatBadge({required this.colors});
+  const _CoachChatBadge({required this.colors, this.size = 24});
 
   final ColorScheme colors;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24,
-      height: 24,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: colors.primary,
         shape: BoxShape.circle,
-        border: Border.all(color: colors.surface, width: 2),
+        border: Border.all(color: colors.surface, width: size < 20 ? 1.5 : 2),
       ),
-      child: Icon(Icons.chat_bubble_rounded, size: 12, color: colors.onPrimary),
+      child: Icon(
+        Icons.chat_bubble_rounded,
+        size: size * 0.5,
+        color: colors.onPrimary,
+      ),
     );
   }
 }

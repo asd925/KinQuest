@@ -475,7 +475,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get weeklyChampionshipDescription => 'تنافسوا عبر عدة جولات ليصبح أحدكم بطل العائلة لهذا الأسبوع.';
 
   @override
-  String get weeklyChampionshipReward => 'أمنية عائلية';
+  String get weeklyChampionshipReward => '+٥٠ رمزًا + نقاط الترتيب';
 
   @override
   String get monthlyCup => 'الكأس الشهري';

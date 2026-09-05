@@ -125,15 +125,20 @@ class _CharadesScreenState extends State<CharadesScreen> {
     return GameExitGuard(
       gameInProgress: _isPlaying,
       child: Scaffold(
-        floatingActionButton: _showResults
-            ? const SilaGameCoachButton(
+        appBar: AppBar(
+          title: Text(strings.charades),
+          actions: [
+            if (_showResults)
+              const SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
                 tone: SilaGameCoachTone.celebrating,
-                resultScreen: true,
               )
-            : _isPlaying
-            ? const SilaGameCoachButton()
-            : null,
-        appBar: AppBar(title: Text(strings.charades)),
+            else if (_isPlaying)
+              const SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
+              ),
+          ],
+        ),
         body: _showResults
             ? Padding(padding: const EdgeInsets.all(24), child: _buildResults())
             : _isPlaying

@@ -110,6 +110,28 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('app bar placement stays inside reserved header space', (
+    tester,
+  ) async {
+    await _setViewport(tester, const Size(390, 844));
+    await tester.pumpWidget(_appBarApp());
+    await tester.pump();
+
+    final action = find.byKey(const ValueKey('sila-game-coach-app-bar'));
+    final appBar = find.byType(AppBar);
+
+    expect(action, findsOneWidget);
+    expect(find.byKey(const ValueKey('sila-game-coach-phone')), findsNothing);
+    expect(tester.getSize(action), const Size.square(48));
+    expect(
+      tester.getRect(appBar).contains(tester.getRect(action).center),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   for (final (tone, pose, motion, messageFragment) in [
     (
       SilaGameCoachTone.thinking,
@@ -285,6 +307,22 @@ Widget _bannerApp({required bool disableAnimations}) {
           child: SilaGameCoachBanner(),
         ),
       ),
+    ),
+  );
+}
+
+Widget _appBarApp() {
+  return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(
+      appBar: AppBar(
+        title: const Text('Game'),
+        actions: const [
+          SilaGameCoachButton(placement: SilaGameCoachPlacement.appBar),
+        ],
+      ),
+      body: const Center(child: Text('Game content')),
     ),
   );
 }

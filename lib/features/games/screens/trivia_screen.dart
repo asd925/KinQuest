@@ -622,8 +622,12 @@ class _TriviaScreenState extends State<TriviaScreen> {
     return GameExitGuard(
       gameInProgress: gameInProgress,
       child: Scaffold(
-        floatingActionButton: showSila
-            ? SilaGameCoachButton(
+        appBar: AppBar(
+          title: Text(strings.trivia),
+          actions: [
+            if (showSila)
+              SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
                 tone: switch (_phase) {
                   _TriviaPhase.questionResult =>
                     _lastResultWasSuccessful
@@ -633,9 +637,9 @@ class _TriviaScreenState extends State<TriviaScreen> {
                   _TriviaPhase.finalResults => SilaGameCoachTone.winner,
                   _ => SilaGameCoachTone.play,
                 },
-              )
-            : null,
-        appBar: AppBar(title: Text(strings.trivia)),
+              ),
+          ],
+        ),
         body: SafeArea(
           child: _phase == _TriviaPhase.setup
               ? _buildSetup()

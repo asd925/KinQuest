@@ -634,8 +634,12 @@ class _EmojiGuessScreenState extends State<EmojiGuessScreen> {
     return GameExitGuard(
       gameInProgress: gameInProgress,
       child: Scaffold(
-        floatingActionButton: showSila
-            ? SilaGameCoachButton(
+        appBar: AppBar(
+          title: Text(strings.emojiGuess),
+          actions: [
+            if (showSila)
+              SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
                 tone: switch (_phase) {
                   _EmojiGuessPhase.puzzleResult =>
                     _lastResultWasSuccessful
@@ -646,9 +650,9 @@ class _EmojiGuessScreenState extends State<EmojiGuessScreen> {
                   _EmojiGuessPhase.finalResults => SilaGameCoachTone.winner,
                   _ => SilaGameCoachTone.play,
                 },
-              )
-            : null,
-        appBar: AppBar(title: Text(strings.emojiGuess)),
+              ),
+          ],
+        ),
         body: SafeArea(
           child: _phase == _EmojiGuessPhase.setup
               ? _buildSetup()
