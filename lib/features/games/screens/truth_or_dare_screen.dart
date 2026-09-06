@@ -152,15 +152,20 @@ class _TruthOrDareScreenState extends State<TruthOrDareScreen> {
     return GameExitGuard(
       gameInProgress: _isPlaying,
       child: Scaffold(
-        floatingActionButton: _showResults
-            ? const SilaGameCoachButton(
+        appBar: AppBar(
+          title: Text(strings.truthOrDare),
+          actions: [
+            if (_showResults)
+              const SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
                 tone: SilaGameCoachTone.celebrating,
-                resultScreen: true,
               )
-            : _isPlaying
-            ? const SilaGameCoachButton()
-            : null,
-        appBar: AppBar(title: Text(strings.truthOrDare)),
+            else if (_isPlaying)
+              const SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
+              ),
+          ],
+        ),
         body: _showResults || _isPlaying
             ? Padding(
                 padding: const EdgeInsets.all(24),

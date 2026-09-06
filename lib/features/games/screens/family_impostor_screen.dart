@@ -301,17 +301,21 @@ class _FamilyImpostorScreenState extends State<FamilyImpostorScreen> {
     return GameExitGuard(
       gameInProgress: gameInProgress,
       child: Scaffold(
-        floatingActionButton: showSila
-            ? SilaGameCoachButton(
+        appBar: AppBar(
+          title: Text(strings.familyImpostor),
+          actions: [
+            if (showSila)
+              SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
                 tone: switch (_phase) {
                   _GamePhase.voteResults ||
                   _GamePhase.roundResult => SilaGameCoachTone.celebrating,
                   _GamePhase.finalLeaderboard => SilaGameCoachTone.winner,
                   _ => SilaGameCoachTone.play,
                 },
-              )
-            : null,
-        appBar: AppBar(title: Text(strings.familyImpostor)),
+              ),
+          ],
+        ),
         body: SafeArea(child: _buildBody()),
       ),
     );

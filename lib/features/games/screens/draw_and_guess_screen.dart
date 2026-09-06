@@ -317,8 +317,12 @@ class _DrawAndGuessScreenState extends State<DrawAndGuessScreen> {
     return GameExitGuard(
       gameInProgress: gameInProgress,
       child: Scaffold(
-        floatingActionButton: showSila
-            ? SilaGameCoachButton(
+        appBar: AppBar(
+          title: Text(strings.drawAndGuess),
+          actions: [
+            if (showSila)
+              SilaGameCoachButton(
+                placement: SilaGameCoachPlacement.appBar,
                 tone: switch (_phase) {
                   _DrawGamePhase.roundResult =>
                     _roundWasSuccessful
@@ -327,9 +331,9 @@ class _DrawAndGuessScreenState extends State<DrawAndGuessScreen> {
                   _DrawGamePhase.finalLeaderboard => SilaGameCoachTone.winner,
                   _ => SilaGameCoachTone.play,
                 },
-              )
-            : null,
-        appBar: AppBar(title: Text(strings.drawAndGuess)),
+              ),
+          ],
+        ),
         body: SafeArea(child: _buildBody()),
       ),
     );

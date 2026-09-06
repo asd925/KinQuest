@@ -34,13 +34,18 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Next Prompt'));
     await tester.pump(const Duration(milliseconds: 300));
 
-    final coach = find.byKey(const ValueKey('sila-game-coach-phone'));
+    final coach = find.byKey(const ValueKey('sila-game-coach-app-bar'));
+    final appBar = find.byType(AppBar);
     final playAgain = find.widgetWithText(ElevatedButton, 'Play Again');
     final changeCategory = find.widgetWithText(
       OutlinedButton,
       'Change Category',
     );
     expect(coach, findsOneWidget);
+    expect(
+      tester.getRect(appBar).contains(tester.getRect(coach).center),
+      isTrue,
+    );
     expect(playAgain, findsOneWidget);
     expect(changeCategory, findsOneWidget);
     expect(tester.getRect(coach).overlaps(tester.getRect(playAgain)), isFalse);
