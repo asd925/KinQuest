@@ -635,6 +635,7 @@ class _EmojiGuessScreenState extends State<EmojiGuessScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.emojiGuess),
           actions: [
             if (showSila)

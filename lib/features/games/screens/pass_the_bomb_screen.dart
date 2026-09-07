@@ -485,6 +485,7 @@ class _PassTheBombScreenState extends State<PassTheBombScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.passTheBomb),
           actions: [
             if (showSila)

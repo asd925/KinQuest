@@ -1652,7 +1652,7 @@ abstract class AppLocalizations {
   /// No description provided for @silaChatOfflineNotice.
   ///
   /// In en, this message translates to:
-  /// **'Sila is using built-in offline guidance until the AI service reconnects. This session stays on this device.'**
+  /// **'Sila is ready in built-in mode, so you can still type any question while live AI reconnects.'**
   String get silaChatOfflineNotice;
 
   /// No description provided for @silaChatOfflineGameReply.
@@ -1676,8 +1676,50 @@ abstract class AppLocalizations {
   /// No description provided for @silaChatOfflineGeneralReply.
   ///
   /// In en, this message translates to:
-  /// **'I’m in offline mode right now, but I’m still with you. Ask me to pick a game, suggest a bonding moment, or give your family a fun challenge.'**
+  /// **'I’m listening. I can help with a game, explain what to do next, suggest a family activity, plan a mission, or guide you to memories and rewards. Tell me which one you need.'**
   String get silaChatOfflineGeneralReply;
+
+  /// No description provided for @silaChatOfflineGreetingReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi! I’m Sila, your family’s game companion. Tell me what you’re playing or what your family needs, and I’ll help right away.'**
+  String get silaChatOfflineGreetingReply;
+
+  /// No description provided for @silaChatOfflineHelpReply.
+  ///
+  /// In en, this message translates to:
+  /// **'I can help. Read the current prompt together, let each person take a turn, and use the game’s main button when everyone is ready. Tell me the game name or the rule that is confusing and I’ll narrow it down.'**
+  String get silaChatOfflineHelpReply;
+
+  /// No description provided for @silaChatOfflineScoreReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the score friendly: celebrate clever answers, settle ties with one quick bonus round, and make sure everyone gets a turn. The best win is a rematch everyone wants!'**
+  String get silaChatOfflineScoreReply;
+
+  /// No description provided for @silaChatOfflineMemoryReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Memories to save a photo and a short caption from this moment. Include who was there and what made everyone laugh so your family can enjoy it later.'**
+  String get silaChatOfflineMemoryReply;
+
+  /// No description provided for @silaChatOfflineMissionReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one small mission everyone can finish together today, agree on who will do each part, then mark the progress in Family Missions. Small shared wins build the streak.'**
+  String get silaChatOfflineMissionReply;
+
+  /// No description provided for @silaChatOfflineRewardReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Games and family activities earn Family Tokens. Use them in Rewards or Sila Studio, and only spend them on a theme or cosmetic your family really wants.'**
+  String get silaChatOfflineRewardReply;
+
+  /// No description provided for @silaChatOfflineEncouragementReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s reset together: take one slow breath, make the next round easier, and give every player one encouraging cheer. A difficult round does not decide the whole game.'**
+  String get silaChatOfflineEncouragementReply;
 
   /// No description provided for @silaChatDeveloperPreview.
   ///

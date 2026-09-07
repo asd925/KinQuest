@@ -20,6 +20,8 @@ class SilaChatPanel extends StatefulWidget {
     this.chatService,
     this.voiceService,
     this.onPoseChanged,
+    this.compact = false,
+    this.conversationHeight = 360,
   });
 
   final bool developerPreview;
@@ -27,6 +29,8 @@ class SilaChatPanel extends StatefulWidget {
   final SilaChatService? chatService;
   final SilaVoiceService? voiceService;
   final ValueChanged<SilaMascotPose>? onPoseChanged;
+  final bool compact;
+  final double conversationHeight;
 
   @override
   State<SilaChatPanel> createState() => _SilaChatPanelState();
@@ -289,15 +293,15 @@ class _SilaChatPanelState extends State<SilaChatPanel> {
   bool _canUseOfflineChat(Object error) {
     if (error is! SilaChatException) return false;
     return switch (error.failure) {
-      SilaChatFailure.unavailable ||
-      SilaChatFailure.invalidResponse ||
-      SilaChatFailure.unknown => true,
       SilaChatFailure.signInRequired ||
-      SilaChatFailure.invalidRequest ||
       SilaChatFailure.familyRequired ||
       SilaChatFailure.forbidden ||
       SilaChatFailure.notFound ||
-      SilaChatFailure.rateLimited => false,
+      SilaChatFailure.rateLimited ||
+      SilaChatFailure.unavailable ||
+      SilaChatFailure.invalidResponse ||
+      SilaChatFailure.unknown => true,
+      SilaChatFailure.invalidRequest => false,
     };
   }
 
@@ -314,6 +318,49 @@ class _SilaChatPanelState extends State<SilaChatPanel> {
     final challengeWords = isArabic
         ? const ['تحدي', 'ممتع', 'تشجيع', 'شجع']
         : const ['challenge', 'fun', 'cheer', 'encourage'];
+    final greetingWords = isArabic
+        ? const ['مرحبا', 'مرحبًا', 'هلا', 'السلام', 'صباح', 'مساء']
+        : const ['hello', 'hi ', 'hey', 'morning', 'evening'];
+    final helpWords = isArabic
+        ? const ['مساعدة', 'ساعد', 'ماذا أفعل', 'كيف', 'اشرح', 'قواعد']
+        : const ['help', 'what do i do', 'how', 'explain', 'rule'];
+    final scoreWords = isArabic
+        ? const ['فوز', 'نفوز', 'نقاط', 'نتيجة', 'تعادل']
+        : const ['win', 'score', 'point', 'tie'];
+    final memoryWords = isArabic
+        ? const ['ذكرى', 'ذكريات', 'صورة', 'صور']
+        : const ['memory', 'memories', 'photo', 'picture'];
+    final missionWords = isArabic
+        ? const ['مهمة', 'مهام', 'هدف', 'أهداف']
+        : const ['mission', 'goal'];
+    final rewardWords = isArabic
+        ? const ['مكافأة', 'مكافآت', 'رمز', 'رموز', 'ملابس', 'مظهر']
+        : const ['reward', 'token', 'cosmetic', 'outfit', 'wardrobe'];
+    final encouragementWords = isArabic
+        ? const ['حزين', 'ملل', 'ممل', 'خسر', 'صعب']
+        : const ['sad', 'bored', 'boring', 'lost', 'hard', 'difficult'];
+
+    if (greetingWords.any(normalized.contains)) {
+      return strings.silaChatOfflineGreetingReply;
+    }
+    if (helpWords.any(normalized.contains)) {
+      return strings.silaChatOfflineHelpReply;
+    }
+    if (scoreWords.any(normalized.contains)) {
+      return strings.silaChatOfflineScoreReply;
+    }
+    if (memoryWords.any(normalized.contains)) {
+      return strings.silaChatOfflineMemoryReply;
+    }
+    if (missionWords.any(normalized.contains)) {
+      return strings.silaChatOfflineMissionReply;
+    }
+    if (rewardWords.any(normalized.contains)) {
+      return strings.silaChatOfflineRewardReply;
+    }
+    if (encouragementWords.any(normalized.contains)) {
+      return strings.silaChatOfflineEncouragementReply;
+    }
 
     if (gameWords.any(normalized.contains)) {
       return strings.silaChatOfflineGameReply;
@@ -448,7 +495,7 @@ class _SilaChatPanelState extends State<SilaChatPanel> {
 
     return Container(
       key: const ValueKey('sila-chat-panel'),
-      padding: const EdgeInsets.all(3),
+      padding: EdgeInsets.all(widget.compact ? 2 : 3),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF5EE1BD), Color(0xFFFFD36E), Color(0xFFFF8B72)],
@@ -465,10 +512,10 @@ class _SilaChatPanelState extends State<SilaChatPanel> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colors.surface,
-          borderRadius: BorderRadius.circular(27),
+          borderRadius: BorderRadius.circular(widget.compact ? 23 : 27),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(widget.compact ? 12 : 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -484,40 +531,44 @@ class _SilaChatPanelState extends State<SilaChatPanel> {
                 onAutoVoiceChanged: _setAutoVoice,
                 onClear: _confirmClear,
               ),
-              const SizedBox(height: 14),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer.withValues(alpha: 0.52),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.shield_outlined,
-                      size: 19,
-                      color: colors.onPrimaryContainer,
-                    ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: Text(
-                        strings.silaChatPrivacy,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colors.onPrimaryContainer,
-                          height: 1.35,
+              if (!widget.compact) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 13,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer.withValues(alpha: 0.52),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.shield_outlined,
+                        size: 19,
+                        color: colors.onPrimaryContainer,
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Text(
+                          strings.silaChatPrivacy,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: colors.onPrimaryContainer,
+                                height: 1.35,
+                              ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 14),
+              ],
+              const SizedBox(height: 12),
               Container(
-                height: 360,
+                key: const ValueKey('sila-chat-conversation'),
+                height: widget.conversationHeight,
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(22),
@@ -582,7 +633,8 @@ class _SilaChatPanelState extends State<SilaChatPanel> {
       controller: _scrollController,
       padding: const EdgeInsets.all(14),
       children: [
-        if (_offlineMode) const _OfflineChatNotice(),
+        if (_offlineMode)
+          _BuiltInChatNotice(onReconnect: () => unawaited(_loadHistory())),
         if (_messages.isEmpty) _ChatEmptyState(onStarterSelected: _send),
         for (final message in _messages)
           _ChatBubble(
@@ -598,8 +650,10 @@ class _SilaChatPanelState extends State<SilaChatPanel> {
   }
 }
 
-class _OfflineChatNotice extends StatelessWidget {
-  const _OfflineChatNotice();
+class _BuiltInChatNotice extends StatelessWidget {
+  const _BuiltInChatNotice({required this.onReconnect});
+
+  final VoidCallback onReconnect;
 
   @override
   Widget build(BuildContext context) {
@@ -615,7 +669,7 @@ class _OfflineChatNotice extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.offline_bolt_rounded, color: colors.onSecondaryContainer),
+          Icon(Icons.auto_awesome_rounded, color: colors.onSecondaryContainer),
           const SizedBox(width: 9),
           Expanded(
             child: Text(
@@ -625,6 +679,13 @@ class _OfflineChatNotice extends StatelessWidget {
                 height: 1.35,
               ),
             ),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            tooltip: AppLocalizations.of(context)!.tryAgain,
+            onPressed: onReconnect,
+            icon: const Icon(Icons.cloud_sync_rounded),
+            color: colors.onSecondaryContainer,
           ),
         ],
       ),

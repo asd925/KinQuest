@@ -836,7 +836,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get silaChatVoiceUnavailable => 'لا يتوفر صوت عربي أو إنجليزي متوافق على هذا الجهاز. لا يزال بإمكانك قراءة كل رد.';
 
   @override
-  String get silaChatOfflineNotice => 'يستخدم صلة إرشادات مدمجة دون اتصال حتى تعود خدمة الذكاء الاصطناعي. تبقى هذه الجلسة على هذا الجهاز.';
+  String get silaChatOfflineNotice => 'صلة جاهز بوضع المساعدة المدمجة، ويمكنك كتابة أي سؤال بينما يعاد الاتصال بالذكاء الاصطناعي المباشر.';
 
   @override
   String get silaChatOfflineGameReply => 'لنلعب تخمين الرموز التعبيرية! انقسموا إلى فريقين واختاروا ثلاث جولات وتناوبوا على كشف التلميحات.';
@@ -848,7 +848,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get silaChatOfflineCheerReply => 'تحدي العائلة: ابنوا أطول برج ممكن من أدوات منزلية آمنة خلال خمس دقائق، ثم احتفلوا بأفضل فكرة لدى كل شخص!';
 
   @override
-  String get silaChatOfflineGeneralReply => 'أنا في وضع عدم الاتصال الآن، لكنني ما زلت معكم. اطلبوا مني اختيار لعبة أو اقتراح لحظة تقارب أو تقديم تحدٍ عائلي ممتع.';
+  String get silaChatOfflineGeneralReply => 'أنا أستمع إليك. أستطيع مساعدتك في لعبة أو شرح الخطوة التالية أو اقتراح نشاط عائلي أو التخطيط لمهمة أو إرشادك إلى الذكريات والمكافآت. أخبرني بما تحتاجه.';
+
+  @override
+  String get silaChatOfflineGreetingReply => 'مرحبًا! أنا صلة، رفيق ألعاب عائلتك. أخبرني بما تلعبون أو بما تحتاجه العائلة وسأساعدك فورًا.';
+
+  @override
+  String get silaChatOfflineHelpReply => 'أستطيع مساعدتك. اقرأوا المطلوب معًا، وليأخذ كل شخص دوره، ثم استخدموا الزر الرئيسي في اللعبة عندما يصبح الجميع جاهزًا. أخبرني باسم اللعبة أو القاعدة غير الواضحة لأشرحها بدقة.';
+
+  @override
+  String get silaChatOfflineScoreReply => 'اجعلوا النتيجة ودّية: احتفلوا بالإجابات الذكية، واحسموا التعادل بجولة إضافية سريعة، وتأكدوا أن الجميع أخذ دوره. أفضل فوز هو الذي يجعل الجميع يرغب في جولة أخرى!';
+
+  @override
+  String get silaChatOfflineMemoryReply => 'افتحوا الذكريات لحفظ صورة وتعليق قصير عن هذه اللحظة. أضيفوا من كان حاضرًا وما الذي أضحك الجميع لتستمتع العائلة بها لاحقًا.';
+
+  @override
+  String get silaChatOfflineMissionReply => 'اختاروا مهمة صغيرة يستطيع الجميع إنهاءها معًا اليوم، واتفقوا على دور كل شخص، ثم سجلوا التقدم في مهام العائلة. الإنجازات المشتركة الصغيرة تبني الاستمرارية.';
+
+  @override
+  String get silaChatOfflineRewardReply => 'تمنحكم الألعاب والأنشطة العائلية رموز العائلة. استخدموها في المكافآت أو استوديو صلة، وأنفقوها فقط على مظهر أو سمة تريدها العائلة فعلًا.';
+
+  @override
+  String get silaChatOfflineEncouragementReply => 'لنبدأ من جديد معًا: خذوا نفسًا هادئًا، واجعلوا الجولة التالية أسهل، وليشجع كل شخص لاعبًا آخر. الجولة الصعبة لا تحدد نتيجة اللعبة كلها.';
 
   @override
   String get silaChatDeveloperPreview => 'محادثة تجريبية—لن يتم حفظ الرسائل.';

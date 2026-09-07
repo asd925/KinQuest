@@ -203,6 +203,7 @@ class _MemoryChallengeScreenState extends State<MemoryChallengeScreen> {
     final strings = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: silaGameToolbarHeight,
         title: Text(strings.memoryChallenge),
         actions: [
           if (_showResults)

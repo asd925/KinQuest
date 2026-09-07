@@ -437,6 +437,7 @@ class _WouldYouRatherScreenState extends State<WouldYouRatherScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.wouldYouRather),
           actions: [
             if (_phase == _GamePhase.results)

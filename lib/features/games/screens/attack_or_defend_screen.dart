@@ -632,6 +632,7 @@ class _AttackOrDefendScreenState extends State<AttackOrDefendScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.attackOrDefendTitle),
           actions: [
             if (showSila)

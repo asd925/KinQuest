@@ -122,7 +122,8 @@ void main() {
 
     expect(action, findsOneWidget);
     expect(find.byKey(const ValueKey('sila-game-coach-phone')), findsNothing);
-    expect(tester.getSize(action), const Size.square(48));
+    expect(tester.getSize(action), const Size.square(64));
+    expect(tester.getSize(appBar).height, silaGameToolbarHeight);
     expect(
       tester.getRect(appBar).contains(tester.getRect(action).center),
       isTrue,
@@ -222,7 +223,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('opening the coach shows the full looping Sila guide', (
+  testWidgets('opening the coach shows Sila and a usable full chat', (
     tester,
   ) async {
     await _setViewport(tester, const Size(390, 844));
@@ -244,6 +245,9 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.byKey(const ValueKey('sila-game-chat-panel')), findsOneWidget);
+    expect(find.byKey(const ValueKey('sila-chat-input')), findsOneWidget);
+    expect(find.byKey(const ValueKey('sila-chat-send')), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -317,6 +321,7 @@ Widget _appBarApp() {
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       appBar: AppBar(
+        toolbarHeight: silaGameToolbarHeight,
         title: const Text('Game'),
         actions: const [
           SilaGameCoachButton(placement: SilaGameCoachPlacement.appBar),

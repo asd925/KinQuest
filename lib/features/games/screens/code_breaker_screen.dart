@@ -632,6 +632,7 @@ class _CodeBreakerScreenState extends State<CodeBreakerScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.codeBreakerTitle),
           actions: [
             if (showSila)

@@ -569,6 +569,7 @@ class _RiskItScreenState extends State<RiskItScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.riskItTitle),
           actions: [
             if (showSila)
