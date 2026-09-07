@@ -1,5 +1,20 @@
 import 'digital_reward_definition.dart';
 
+Set<String> equippedDigitalRewardIds(
+  Iterable<DigitalRewardDefinition> catalog,
+  EquippedDigitalRewards equipped, {
+  Set<String>? ownedRewardIds,
+}) {
+  return catalog
+      .where(
+        (reward) =>
+            (ownedRewardIds == null || ownedRewardIds.contains(reward.id)) &&
+            equipped.assetFor(reward.category) == reward.assetKey,
+      )
+      .map((reward) => reward.id)
+      .toSet();
+}
+
 class EquippedDigitalRewards {
   const EquippedDigitalRewards({
     this.profileFrame = 'default',
