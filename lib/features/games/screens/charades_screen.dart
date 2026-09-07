@@ -126,6 +126,7 @@ class _CharadesScreenState extends State<CharadesScreen> {
       gameInProgress: _isPlaying,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.charades),
           actions: [
             if (_showResults)

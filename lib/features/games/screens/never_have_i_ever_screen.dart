@@ -192,6 +192,7 @@ class _NeverHaveIEverScreenState extends State<NeverHaveIEverScreen> {
       gameInProgress: _isPlaying,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.neverHaveIEver),
           actions: [
             if (_showResults)

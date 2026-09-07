@@ -829,7 +829,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get silaChatVoiceUnavailable => 'A compatible English or Arabic voice is not available on this device. You can still read every reply.';
 
   @override
-  String get silaChatOfflineNotice => 'Sila is using built-in offline guidance until the AI service reconnects. This session stays on this device.';
+  String get silaChatOfflineNotice => 'Sila is ready in built-in mode, so you can still type any question while live AI reconnects.';
 
   @override
   String get silaChatOfflineGameReply => 'Let’s play Emoji Guess! Split into two teams, choose three rounds, and let everyone take turns revealing the clues.';
@@ -841,7 +841,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get silaChatOfflineCheerReply => 'Family challenge: build the tallest tower you can from safe household items in five minutes, then celebrate everyone’s best idea!';
 
   @override
-  String get silaChatOfflineGeneralReply => 'I’m in offline mode right now, but I’m still with you. Ask me to pick a game, suggest a bonding moment, or give your family a fun challenge.';
+  String get silaChatOfflineGeneralReply => 'I’m listening. I can help with a game, explain what to do next, suggest a family activity, plan a mission, or guide you to memories and rewards. Tell me which one you need.';
+
+  @override
+  String get silaChatOfflineGreetingReply => 'Hi! I’m Sila, your family’s game companion. Tell me what you’re playing or what your family needs, and I’ll help right away.';
+
+  @override
+  String get silaChatOfflineHelpReply => 'I can help. Read the current prompt together, let each person take a turn, and use the game’s main button when everyone is ready. Tell me the game name or the rule that is confusing and I’ll narrow it down.';
+
+  @override
+  String get silaChatOfflineScoreReply => 'Keep the score friendly: celebrate clever answers, settle ties with one quick bonus round, and make sure everyone gets a turn. The best win is a rematch everyone wants!';
+
+  @override
+  String get silaChatOfflineMemoryReply => 'Open Memories to save a photo and a short caption from this moment. Include who was there and what made everyone laugh so your family can enjoy it later.';
+
+  @override
+  String get silaChatOfflineMissionReply => 'Choose one small mission everyone can finish together today, agree on who will do each part, then mark the progress in Family Missions. Small shared wins build the streak.';
+
+  @override
+  String get silaChatOfflineRewardReply => 'Games and family activities earn Family Tokens. Use them in Rewards or Sila Studio, and only spend them on a theme or cosmetic your family really wants.';
+
+  @override
+  String get silaChatOfflineEncouragementReply => 'Let’s reset together: take one slow breath, make the next round easier, and give every player one encouraging cheer. A difficult round does not decide the whole game.';
 
   @override
   String get silaChatDeveloperPreview => 'Preview conversation—messages are not saved.';

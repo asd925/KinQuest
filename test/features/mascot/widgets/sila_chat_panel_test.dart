@@ -243,7 +243,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('family and rate-limit failures have useful localized guidance', (
+  testWidgets('family and rate-limit failures preserve a usable local chat', (
     tester,
   ) async {
     final familyRequiredService = _FakeChatService(
@@ -266,9 +266,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-      find.text('Join or create a family before chatting with Sila.'),
+      find.byKey(const ValueKey('sila-chat-offline-notice')),
       findsOneWidget,
     );
+    expect(_chatInput(tester).enabled, isTrue);
 
     final rateLimitedService = _FakeChatService(
       onLoad: () async => const [],
@@ -300,8 +301,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
+    expect(find.textContaining('I can help with a game'), findsOneWidget);
     expect(
-      find.text('Sila needs a quick pause. Try again in about a minute.'),
+      find.byKey(const ValueKey('sila-chat-offline-notice')),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
@@ -391,6 +393,68 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'signed-out gateway still accepts a freely typed question and helps',
+    (tester) async {
+      final chatService = _FakeChatService(
+        onLoad: () => Future<List<SilaChatMessage>>.error(
+          const SilaChatException(SilaChatFailure.signInRequired),
+        ),
+      );
+
+      await tester.pumpWidget(
+        _app(
+          SilaChatPanel(
+            chatService: chatService,
+            voiceService: SilaVoiceService(
+              engine: _RecordingSpeechEngine(),
+              platformSupported: false,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(_chatInput(tester).enabled, isTrue);
+      await tester.enterText(
+        find.byKey(const ValueKey('sila-chat-input')),
+        'This round feels difficult and I need encouragement',
+      );
+      await tester.tap(find.byKey(const ValueKey('sila-chat-send')));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.textContaining('A difficult round does not decide'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('compact game chat uses its requested conversation height', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        SilaChatPanel(
+          developerPreview: true,
+          compact: true,
+          conversationHeight: 300,
+          voiceService: SilaVoiceService(
+            engine: _RecordingSpeechEngine(),
+            platformSupported: false,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final conversation = find.byKey(const ValueKey('sila-chat-conversation'));
+    expect(conversation, findsOneWidget);
+    expect(tester.getSize(conversation).height, 300);
     expect(tester.takeException(), isNull);
   });
 

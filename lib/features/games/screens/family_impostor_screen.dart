@@ -302,6 +302,7 @@ class _FamilyImpostorScreenState extends State<FamilyImpostorScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.familyImpostor),
           actions: [
             if (showSila)

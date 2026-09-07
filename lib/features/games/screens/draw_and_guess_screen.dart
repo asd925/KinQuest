@@ -318,6 +318,7 @@ class _DrawAndGuessScreenState extends State<DrawAndGuessScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.drawAndGuess),
           actions: [
             if (showSila)

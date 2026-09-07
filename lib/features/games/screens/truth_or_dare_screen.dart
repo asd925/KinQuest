@@ -153,6 +153,7 @@ class _TruthOrDareScreenState extends State<TruthOrDareScreen> {
       gameInProgress: _isPlaying,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.truthOrDare),
           actions: [
             if (_showResults)

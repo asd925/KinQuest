@@ -326,6 +326,7 @@ class _DontSayItScreenState extends State<DontSayItScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.dontSayIt),
           actions: [
             if (showSila)

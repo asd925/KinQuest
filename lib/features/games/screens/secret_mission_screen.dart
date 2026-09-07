@@ -571,6 +571,7 @@ class _SecretMissionScreenState extends State<SecretMissionScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.secretMission),
           actions: [
             if (showSila)

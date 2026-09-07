@@ -623,6 +623,7 @@ class _TriviaScreenState extends State<TriviaScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.trivia),
           actions: [
             if (showSila)

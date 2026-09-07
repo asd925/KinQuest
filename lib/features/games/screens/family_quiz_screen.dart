@@ -794,6 +794,7 @@ class _FamilyQuizScreenState extends State<FamilyQuizScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.familyQuiz),
           actions: [
             if (showSila)

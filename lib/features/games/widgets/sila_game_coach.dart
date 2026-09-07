@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/mascot/sila_mascot.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../mascot/widgets/sila_chat_panel.dart';
 import '../../rewards/digital/digital_reward_visuals.dart';
 import '../../rewards/digital/equipped_digital_rewards.dart';
 
@@ -16,6 +17,10 @@ import '../../rewards/digital/equipped_digital_rewards.dart';
 enum SilaGameCoachTone { play, thinking, celebrating, oops, winner }
 
 enum SilaGameCoachPlacement { floating, appBar }
+
+/// Game screens reserve a little more header space so Sila remains a visible,
+/// recognizable host without covering the game's controls or content.
+const double silaGameToolbarHeight = 72;
 
 class SilaGameCoachButton extends StatelessWidget {
   const SilaGameCoachButton({
@@ -250,30 +255,59 @@ class _CoachButton extends StatelessWidget {
     final strings = AppLocalizations.of(context)!;
     return showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
       isScrollControlled: true,
-      builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 620),
-              child: SilaMascotGuide(
-                title: strings.mascotName,
-                message: coachMessage,
-                semanticLabel: strings.mascotSemanticLabel,
-                pose: pose,
-                motion: motion,
-                animate: !MediaQuery.disableAnimationsOf(context),
-                loop: true,
-                accessoryAssetKey: rewards.mascotAccessory,
-                outfitAssetKey: rewards.mascotOutfit,
-                auraAssetKey: rewards.mascotAura,
-              ),
+      useSafeArea: true,
+      constraints: const BoxConstraints(maxWidth: 760),
+      builder: (sheetContext) {
+        final keyboardInset = MediaQuery.viewInsetsOf(sheetContext).bottom;
+        return Padding(
+          padding: EdgeInsets.only(bottom: keyboardInset),
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.92,
+            minChildSize: 0.62,
+            maxChildSize: 0.96,
+            builder: (context, sheetScrollController) => ListView(
+              key: const ValueKey('sila-game-chat-sheet'),
+              controller: sheetScrollController,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+                SilaMascotGuide(
+                  key: const ValueKey('sila-game-chat-guide'),
+                  title: strings.mascotName,
+                  message: coachMessage,
+                  semanticLabel: strings.mascotSemanticLabel,
+                  pose: pose,
+                  motion: motion,
+                  compact: true,
+                  animate: !MediaQuery.disableAnimationsOf(context),
+                  loop: true,
+                  accessoryAssetKey: rewards.mascotAccessory,
+                  outfitAssetKey: rewards.mascotOutfit,
+                  auraAssetKey: rewards.mascotAura,
+                ),
+                const SizedBox(height: 14),
+                const SilaChatPanel(
+                  key: ValueKey('sila-game-chat-panel'),
+                  compact: true,
+                  conversationHeight: 300,
+                ),
+              ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -294,20 +328,20 @@ class _AppBarCoachButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return SizedBox.square(
       key: const ValueKey('sila-game-coach-app-bar'),
-      dimension: 48,
+      dimension: 64,
       child: Stack(
         alignment: Alignment.center,
         children: [
           _RecurringCoachMascot(
             rewards: rewards,
-            height: 44,
+            height: 60,
             pose: pose,
             motion: motion,
           ),
           PositionedDirectional(
-            end: 1,
-            top: 1,
-            child: _CoachChatBadge(colors: colors, size: 18),
+            end: 2,
+            top: 2,
+            child: _CoachChatBadge(colors: colors, size: 21),
           ),
         ],
       ),

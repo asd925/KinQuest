@@ -515,6 +515,7 @@ class _CaptionBattleScreenState extends State<CaptionBattleScreen> {
       gameInProgress: gameInProgress,
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: silaGameToolbarHeight,
           title: Text(strings.captionBattle),
           actions: [
             if (showSila)
