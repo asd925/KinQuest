@@ -9,6 +9,7 @@ import '../digital/digital_reward_error_localization.dart';
 import '../digital/digital_reward_localization.dart';
 import '../digital/digital_reward_service.dart';
 import '../digital/digital_reward_visuals.dart';
+import '../digital/equipped_digital_rewards.dart';
 
 class MyDigitalRewardsScreen extends StatefulWidget {
   const MyDigitalRewardsScreen({super.key, this.developerPreview = false});
@@ -106,6 +107,7 @@ class _MyDigitalRewardsScreenState extends State<MyDigitalRewardsScreen> {
               return _OwnedRewardsCollection(
                 catalog: catalog,
                 owned: previewOwned,
+                equippedRewardIds: const {'frame_gold'},
                 processingRewardId: _processingRewardId,
                 onUpdate: (_, {required unequip}) async {
                   if (!mounted) return;
@@ -140,11 +142,40 @@ class _MyDigitalRewardsScreenState extends State<MyDigitalRewardsScreen> {
                     document.id: document.data(),
                 };
 
-                return _OwnedRewardsCollection(
-                  catalog: catalog,
-                  owned: owned,
-                  processingRewardId: _processingRewardId,
-                  onUpdate: _updateReward,
+                return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userId)
+                      .collection('settings')
+                      .doc('digitalRewards')
+                      .snapshots(),
+                  builder: (context, settingsSnapshot) {
+                    if (!settingsSnapshot.hasData &&
+                        !settingsSnapshot.hasError) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (settingsSnapshot.hasError) {
+                      return _CollectionMessage(
+                        icon: Icons.cloud_off_rounded,
+                        title: strings.collectionLoadFailed,
+                        message: strings.checkConnectionTryAgain,
+                      );
+                    }
+
+                    return _OwnedRewardsCollection(
+                      catalog: catalog,
+                      owned: owned,
+                      equippedRewardIds: equippedDigitalRewardIds(
+                        catalog,
+                        EquippedDigitalRewards.fromMap(
+                          settingsSnapshot.data?.data(),
+                        ),
+                        ownedRewardIds: owned.keys.toSet(),
+                      ),
+                      processingRewardId: _processingRewardId,
+                      onUpdate: _updateReward,
+                    );
+                  },
                 );
               },
             );
@@ -165,12 +196,14 @@ class _OwnedRewardsCollection extends StatelessWidget {
   const _OwnedRewardsCollection({
     required this.catalog,
     required this.owned,
+    required this.equippedRewardIds,
     required this.processingRewardId,
     required this.onUpdate,
   });
 
   final List<DigitalRewardDefinition> catalog;
   final Map<String, Map<String, dynamic>> owned;
+  final Set<String> equippedRewardIds;
   final String? processingRewardId;
   final _OwnedRewardAction onUpdate;
 
@@ -226,7 +259,7 @@ class _OwnedRewardsCollection extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _OwnedRewardCard(
                           reward: reward,
-                          equipped: owned[reward.id]?['equipped'] == true,
+                          equipped: equippedRewardIds.contains(reward.id),
                           processing: processingRewardId == reward.id,
                           anotherRewardProcessing:
                               processingRewardId != null &&

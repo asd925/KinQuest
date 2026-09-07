@@ -10,6 +10,7 @@ import '../digital/digital_reward_error_localization.dart';
 import '../digital/digital_reward_localization.dart';
 import '../digital/digital_reward_service.dart';
 import '../digital/digital_reward_visuals.dart';
+import '../digital/equipped_digital_rewards.dart';
 import '../models/reward_wishlist_proposal.dart';
 import '../services/rewards_service.dart';
 import 'token_history_screen.dart';
@@ -888,19 +889,47 @@ class _DigitalRewardsStore extends StatelessWidget {
 
             final documents = ownedSnapshot.data?.docs ?? const [];
             final owned = documents.map((document) => document.id).toSet();
-            final equipped = documents
-                .where((document) => document.data()['equipped'] == true)
-                .map((document) => document.id)
-                .toSet();
+            return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .collection('settings')
+                  .doc('digitalRewards')
+                  .snapshots(),
+              builder: (context, settingsSnapshot) {
+                if (!settingsSnapshot.hasData && !settingsSnapshot.hasError) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                if (settingsSnapshot.hasError) {
+                  return _RewardsMessage(
+                    icon: Icons.cloud_off_rounded,
+                    title: strings.collectionLoadFailed,
+                    message: strings.checkConnectionTryAgain,
+                    showMascot: false,
+                  );
+                }
 
-            return _DigitalRewardsCatalogView(
-              rewards: rewards,
-              tokens: tokens,
-              ownedRewardIds: owned,
-              equippedRewardIds: equipped,
-              processingRewardId: processingRewardId,
-              onPurchase: onPurchase,
-              onEquip: onEquip,
+                final equipped = equippedDigitalRewardIds(
+                  rewards,
+                  EquippedDigitalRewards.fromMap(settingsSnapshot.data?.data()),
+                  ownedRewardIds: owned,
+                );
+
+                return _DigitalRewardsCatalogView(
+                  rewards: rewards,
+                  tokens: tokens,
+                  ownedRewardIds: owned,
+                  equippedRewardIds: equipped,
+                  processingRewardId: processingRewardId,
+                  onPurchase: onPurchase,
+                  onEquip: onEquip,
+                );
+              },
             );
           },
         );

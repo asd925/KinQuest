@@ -186,8 +186,7 @@ class _SilaStudioScreenState extends State<SilaStudioScreen> {
         setState(() => _tryOn = null);
       } else {
         if (!owned) {
-          await _rewardService.purchase(reward.id);
-          await _rewardService.equip(reward.id);
+          await _rewardService.purchaseAndEquip(reward.id);
         } else if (equipped) {
           await _rewardService.unequip(reward.id);
         } else {
@@ -266,6 +265,12 @@ class _SilaStudioScreenState extends State<SilaStudioScreen> {
                       stream: _equippedRewardsStream,
                       builder: (context, settingsSnapshot) {
                         final documents = ownedSnapshot.data?.docs ?? const [];
+                        final ownedIds = documents
+                            .map((item) => item.id)
+                            .toSet();
+                        final equippedRewards = EquippedDigitalRewards.fromMap(
+                          settingsSnapshot.data?.data(),
+                        );
                         final rewardStateLoading =
                             (!userSnapshot.hasData && !userSnapshot.hasError) ||
                             (!ownedSnapshot.hasData &&
@@ -286,14 +291,13 @@ class _SilaStudioScreenState extends State<SilaStudioScreen> {
                               (userSnapshot.data?.data()?['tokens'] as num?)
                                   ?.toInt() ??
                               0,
-                          owned: documents.map((item) => item.id).toSet(),
-                          equippedIds: documents
-                              .where((item) => item.data()['equipped'] == true)
-                              .map((item) => item.id)
-                              .toSet(),
-                          equippedRewards: EquippedDigitalRewards.fromMap(
-                            settingsSnapshot.data?.data(),
+                          owned: ownedIds,
+                          equippedIds: equippedDigitalRewardIds(
+                            wardrobe,
+                            equippedRewards,
+                            ownedRewardIds: ownedIds,
                           ),
+                          equippedRewards: equippedRewards,
                           catalogLoading: catalogLoading || rewardStateLoading,
                           catalogError: catalogError || rewardStateError,
                         );

@@ -38,6 +38,308 @@ service cloud.firestore {
         );
     }
 
+    // Digital Rewards run directly through Firestore on the project's Spark
+    // plan. Keep the local catalog honest at the data boundary: a client can
+    // create only a known reward, at its canonical price/category/asset, while
+    // atomically debiting that exact number of Tokens.
+    function digitalRewardCost(rewardId) {
+      return rewardId == 'frame_gold' ? 250
+        : rewardId == 'frame_neon' ? 320
+        : rewardId == 'frame_ocean' ? 280
+        : rewardId == 'badge_champion' ? 180
+        : rewardId == 'badge_explorer' ? 150
+        : rewardId == 'badge_family_star' ? 200
+        : rewardId == 'theme_galaxy' ? 420
+        : rewardId == 'theme_ocean' ? 380
+        : rewardId == 'theme_sunset' ? 400
+        : rewardId == 'celebration_confetti' ? 350
+        : rewardId == 'celebration_fireworks' ? 450
+        : rewardId == 'celebration_stars' ? 320
+        : rewardId == 'nameplate_gold' ? 220
+        : rewardId == 'nameplate_neon' ? 240
+        : rewardId == 'nameplate_champion' ? 300
+        : rewardId == 'mascot_guardian_crown' ? 300
+        : rewardId == 'mascot_explorer_cap' ? 240
+        : rewardId == 'mascot_star_halo' ? 380
+        : rewardId == 'mascot_family_cape' ? 320
+        : rewardId == 'mascot_game_jersey' ? 280
+        : rewardId == 'mascot_memory_keeper' ? 340
+        : rewardId == 'mascot_family_sparkles' ? 260
+        : rewardId == 'mascot_cosmic_orbit' ? 420
+        : rewardId == 'mascot_uae_ribbon' ? 360
+        : rewardId == 'mascot_family_leaf_wreath' ? 290
+        : rewardId == 'mascot_scholar_cap' ? 420
+        : rewardId == 'mascot_space_scout' ? 390
+        : rewardId == 'mascot_desert_explorer' ? 310
+        : rewardId == 'mascot_memory_hearts' ? 330
+        : rewardId == 'mascot_victory_burst' ? 460
+        : -1;
+    }
+
+    function digitalRewardCategory(rewardId) {
+      return rewardId in ['frame_gold', 'frame_neon', 'frame_ocean']
+          ? 'profileFrame'
+        : rewardId in ['badge_champion', 'badge_explorer', 'badge_family_star']
+          ? 'profileBadge'
+        : rewardId in ['theme_galaxy', 'theme_ocean', 'theme_sunset']
+          ? 'profileTheme'
+        : rewardId in [
+            'celebration_confetti',
+            'celebration_fireworks',
+            'celebration_stars'
+          ] ? 'celebrationEffect'
+        : rewardId in ['nameplate_gold', 'nameplate_neon', 'nameplate_champion']
+          ? 'nameplate'
+        : rewardId in [
+            'mascot_guardian_crown',
+            'mascot_explorer_cap',
+            'mascot_star_halo',
+            'mascot_family_leaf_wreath',
+            'mascot_scholar_cap'
+          ] ? 'mascotAccessory'
+        : rewardId in [
+            'mascot_family_cape',
+            'mascot_game_jersey',
+            'mascot_memory_keeper',
+            'mascot_space_scout',
+            'mascot_desert_explorer'
+          ] ? 'mascotOutfit'
+        : rewardId in [
+            'mascot_family_sparkles',
+            'mascot_cosmic_orbit',
+            'mascot_uae_ribbon',
+            'mascot_memory_hearts',
+            'mascot_victory_burst'
+          ] ? 'mascotAura'
+        : '';
+    }
+
+    function digitalRewardAsset(rewardId) {
+      return rewardId == 'frame_gold' ? 'gold'
+        : rewardId == 'frame_neon' ? 'neon'
+        : rewardId == 'frame_ocean' ? 'ocean'
+        : rewardId == 'badge_champion' ? 'champion'
+        : rewardId == 'badge_explorer' ? 'explorer'
+        : rewardId == 'badge_family_star' ? 'family_star'
+        : rewardId == 'theme_galaxy' ? 'galaxy'
+        : rewardId == 'theme_ocean' ? 'ocean'
+        : rewardId == 'theme_sunset' ? 'sunset'
+        : rewardId == 'celebration_confetti' ? 'confetti'
+        : rewardId == 'celebration_fireworks' ? 'fireworks'
+        : rewardId == 'celebration_stars' ? 'stars'
+        : rewardId == 'nameplate_gold' ? 'gold'
+        : rewardId == 'nameplate_neon' ? 'neon'
+        : rewardId == 'nameplate_champion' ? 'champion'
+        : rewardId == 'mascot_guardian_crown' ? 'guardian_crown'
+        : rewardId == 'mascot_explorer_cap' ? 'explorer_cap'
+        : rewardId == 'mascot_star_halo' ? 'star_halo'
+        : rewardId == 'mascot_family_cape' ? 'family_cape'
+        : rewardId == 'mascot_game_jersey' ? 'game_jersey'
+        : rewardId == 'mascot_memory_keeper' ? 'memory_keeper'
+        : rewardId == 'mascot_family_sparkles' ? 'family_sparkles'
+        : rewardId == 'mascot_cosmic_orbit' ? 'cosmic_orbit'
+        : rewardId == 'mascot_uae_ribbon' ? 'uae_ribbon'
+        : rewardId == 'mascot_family_leaf_wreath' ? 'family_leaf_wreath'
+        : rewardId == 'mascot_scholar_cap' ? 'scholar_cap'
+        : rewardId == 'mascot_space_scout' ? 'space_scout'
+        : rewardId == 'mascot_desert_explorer' ? 'desert_explorer'
+        : rewardId == 'mascot_memory_hearts' ? 'memory_hearts'
+        : rewardId == 'mascot_victory_burst' ? 'victory_burst'
+        : '';
+    }
+
+    function digitalRewardIdFor(category, asset) {
+      return category == 'profileFrame' && asset == 'gold' ? 'frame_gold'
+        : category == 'profileFrame' && asset == 'neon' ? 'frame_neon'
+        : category == 'profileFrame' && asset == 'ocean' ? 'frame_ocean'
+        : category == 'profileBadge' && asset == 'champion' ? 'badge_champion'
+        : category == 'profileBadge' && asset == 'explorer' ? 'badge_explorer'
+        : category == 'profileBadge' && asset == 'family_star' ? 'badge_family_star'
+        : category == 'profileTheme' && asset == 'galaxy' ? 'theme_galaxy'
+        : category == 'profileTheme' && asset == 'ocean' ? 'theme_ocean'
+        : category == 'profileTheme' && asset == 'sunset' ? 'theme_sunset'
+        : category == 'celebrationEffect' && asset == 'confetti' ? 'celebration_confetti'
+        : category == 'celebrationEffect' && asset == 'fireworks' ? 'celebration_fireworks'
+        : category == 'celebrationEffect' && asset == 'stars' ? 'celebration_stars'
+        : category == 'nameplate' && asset == 'gold' ? 'nameplate_gold'
+        : category == 'nameplate' && asset == 'neon' ? 'nameplate_neon'
+        : category == 'nameplate' && asset == 'champion' ? 'nameplate_champion'
+        : category == 'mascotAccessory' && asset == 'guardian_crown' ? 'mascot_guardian_crown'
+        : category == 'mascotAccessory' && asset == 'explorer_cap' ? 'mascot_explorer_cap'
+        : category == 'mascotAccessory' && asset == 'star_halo' ? 'mascot_star_halo'
+        : category == 'mascotAccessory' && asset == 'family_leaf_wreath' ? 'mascot_family_leaf_wreath'
+        : category == 'mascotAccessory' && asset == 'scholar_cap' ? 'mascot_scholar_cap'
+        : category == 'mascotOutfit' && asset == 'family_cape' ? 'mascot_family_cape'
+        : category == 'mascotOutfit' && asset == 'game_jersey' ? 'mascot_game_jersey'
+        : category == 'mascotOutfit' && asset == 'memory_keeper' ? 'mascot_memory_keeper'
+        : category == 'mascotOutfit' && asset == 'space_scout' ? 'mascot_space_scout'
+        : category == 'mascotOutfit' && asset == 'desert_explorer' ? 'mascot_desert_explorer'
+        : category == 'mascotAura' && asset == 'family_sparkles' ? 'mascot_family_sparkles'
+        : category == 'mascotAura' && asset == 'cosmic_orbit' ? 'mascot_cosmic_orbit'
+        : category == 'mascotAura' && asset == 'uae_ribbon' ? 'mascot_uae_ribbon'
+        : category == 'mascotAura' && asset == 'memory_hearts' ? 'mascot_memory_hearts'
+        : category == 'mascotAura' && asset == 'victory_burst' ? 'mascot_victory_burst'
+        : '';
+    }
+
+    function isUnequippedDigitalRewardAsset(category, asset) {
+      return (
+          category in [
+            'profileBadge',
+            'mascotAccessory',
+            'mascotOutfit',
+            'mascotAura'
+          ] && asset in ['none', 'default']
+        ) || (
+          category in [
+            'profileFrame',
+            'profileTheme',
+            'celebrationEffect',
+            'nameplate'
+          ] && asset == 'default'
+        );
+    }
+
+    function ownsDigitalRewardAsset(userId, category, asset) {
+      let rewardId = digitalRewardIdFor(category, asset);
+      return isUnequippedDigitalRewardAsset(category, asset)
+        || (
+          rewardId != ''
+          && existsAfter(
+            /databases/$(database)/documents/users/$(userId)/ownedRewards/$(rewardId)
+          )
+        );
+    }
+
+    function validDigitalRewardSettingsChange(userId, changedKeys) {
+      let data = request.resource.data;
+      return changedKeys.hasOnly([
+        'profileFrame',
+        'profileBadge',
+        'profileTheme',
+        'celebrationEffect',
+        'nameplate',
+        'mascotAccessory',
+        'mascotOutfit',
+        'mascotAura',
+        'updatedAt'
+      ])
+        && changedKeys.size() == 2
+        && changedKeys.hasAny([
+          'profileFrame',
+          'profileBadge',
+          'profileTheme',
+          'celebrationEffect',
+          'nameplate',
+          'mascotAccessory',
+          'mascotOutfit',
+          'mascotAura'
+        ])
+        && data.updatedAt == request.time
+        && (
+          (
+            changedKeys.hasAny(['profileFrame'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'profileFrame',
+              data.profileFrame
+            )
+          ) || (
+            changedKeys.hasAny(['profileBadge'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'profileBadge',
+              data.profileBadge
+            )
+          ) || (
+            changedKeys.hasAny(['profileTheme'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'profileTheme',
+              data.profileTheme
+            )
+          ) || (
+            changedKeys.hasAny(['celebrationEffect'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'celebrationEffect',
+              data.celebrationEffect
+            )
+          ) || (
+            changedKeys.hasAny(['nameplate'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'nameplate',
+              data.nameplate
+            )
+          ) || (
+            changedKeys.hasAny(['mascotAccessory'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'mascotAccessory',
+              data.mascotAccessory
+            )
+          ) || (
+            changedKeys.hasAny(['mascotOutfit'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'mascotOutfit',
+              data.mascotOutfit
+            )
+          ) || (
+            changedKeys.hasAny(['mascotAura'])
+            && ownsDigitalRewardAsset(
+              userId,
+              'mascotAura',
+              data.mascotAura
+            )
+          )
+        );
+    }
+
+    function validDigitalRewardPurchase(userId, rewardId) {
+      let userPath = /databases/$(database)/documents/users/$(userId);
+      let userBefore = get(userPath).data;
+      let cost = digitalRewardCost(rewardId);
+      return cost > 0
+        && userBefore.familyId != null
+        && family(userBefore.familyId).data.members.hasAny([userId])
+        && userBefore.tokens >= cost
+        && getAfter(userPath).data.tokens == userBefore.tokens - cost
+        && getAfter(userPath).data.lastDigitalRewardPurchase == rewardId
+        && request.resource.data.keys().hasAll([
+          'rewardId',
+          'name',
+          'description',
+          'cost',
+          'category',
+          'assetKey',
+          'previewAsset',
+          'purchasedAt',
+          'equipped'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'rewardId',
+          'name',
+          'description',
+          'cost',
+          'category',
+          'assetKey',
+          'previewAsset',
+          'purchasedAt',
+          'equipped'
+        ])
+        && request.resource.data.rewardId == rewardId
+        && request.resource.data.name is string
+        && request.resource.data.description is string
+        && request.resource.data.cost == cost
+        && request.resource.data.category == digitalRewardCategory(rewardId)
+        && request.resource.data.assetKey == digitalRewardAsset(rewardId)
+        && request.resource.data.previewAsset == 'builtIn:' + rewardId
+        && request.resource.data.purchasedAt == request.time
+        && request.resource.data.equipped is bool;
+    }
+
     function joinsFamilyWithOnlySelf() {
       return signedIn()
         && currentUser().data.familyId == null
@@ -143,8 +445,13 @@ service cloud.firestore {
             && get(/databases/$(database)/documents/users/$(userId))
               .data.familyId == currentUser().data.familyId
           );
-        // Digital Reward ownership is written only by the trusted backend.
-        allow create, update, delete: if false;
+        allow create: if isSelf(userId)
+          && validDigitalRewardPurchase(userId, rewardId);
+        allow update: if isSelf(userId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['equipped'])
+          && request.resource.data.equipped is bool;
+        allow delete: if false;
       }
 
       match /settings/{settingId} {
@@ -154,8 +461,20 @@ service cloud.firestore {
             && get(/databases/$(database)/documents/users/$(userId))
               .data.familyId == currentUser().data.familyId
           );
-        // Equipped Digital Reward state is written only by the trusted backend.
-        allow create, update, delete: if false;
+        allow create: if isSelf(userId)
+          && settingId == 'digitalRewards'
+          && request.resource.data.keys().size() == 2
+          && validDigitalRewardSettingsChange(
+            userId,
+            request.resource.data.keys()
+          );
+        allow update: if isSelf(userId)
+          && settingId == 'digitalRewards'
+          && validDigitalRewardSettingsChange(
+            userId,
+            request.resource.data.diff(resource.data).affectedKeys()
+          );
+        allow delete: if false;
       }
 
       match /fcmTokens/{tokenId} {

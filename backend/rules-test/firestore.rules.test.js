@@ -14,6 +14,8 @@ const {
   collection,
   doc,
   getDoc,
+  runTransaction,
+  serverTimestamp,
   setDoc,
   updateDoc,
   writeBatch,
@@ -51,6 +53,7 @@ test.beforeEach(async () => {
       setDoc(doc(database, "users/alice"), {
         familyId: "FAMILY_A",
         name: "Alice",
+        tokens: 1000,
       }),
       setDoc(doc(database, "users/bob"), {
         familyId: "FAMILY_A",
@@ -112,7 +115,7 @@ test("family content is readable only inside the authenticated family", async ()
   await assertFails(getDoc(doc(malloryDatabase, memoryPath)));
 });
 
-test("digital rewards are family-visible but backend-write-only", async () => {
+test("digital rewards are family-visible and reject forged client writes", async () => {
   const aliceDatabase = testEnvironment
     .authenticatedContext("alice")
     .firestore();
@@ -143,6 +146,106 @@ test("digital rewards are family-visible but backend-write-only", async () => {
     updateDoc(doc(aliceDatabase, settingsPath), {
       profileFrame: "forged",
     }),
+  );
+});
+
+test("a member can atomically buy and equip only a canonical reward", async () => {
+  const database = testEnvironment
+    .authenticatedContext("alice")
+    .firestore();
+  const userRef = doc(database, "users/alice");
+  const ownedRef = doc(database, "users/alice/ownedRewards/frame_neon");
+  const secondOwnedRef = doc(
+    database,
+    "users/alice/ownedRewards/celebration_stars",
+  );
+  const settingsRef = doc(database, "users/alice/settings/digitalRewards");
+
+  // Two equally priced rewards must not be smuggled through one Token debit.
+  await assertFails(
+    runTransaction(database, async (transaction) => {
+      const user = await transaction.get(userRef);
+      transaction.update(userRef, {
+        tokens: user.data().tokens - 320,
+        lastDigitalRewardPurchase: "frame_neon",
+        updatedAt: serverTimestamp(),
+      });
+      transaction.set(ownedRef, {
+        rewardId: "frame_neon",
+        name: "Neon Profile Frame",
+        description: "A bright neon frame.",
+        cost: 320,
+        category: "profileFrame",
+        assetKey: "neon",
+        previewAsset: "builtIn:frame_neon",
+        purchasedAt: serverTimestamp(),
+        equipped: false,
+      });
+      transaction.set(secondOwnedRef, {
+        rewardId: "celebration_stars",
+        name: "Starfall Celebration",
+        description: "A family star celebration.",
+        cost: 320,
+        category: "celebrationEffect",
+        assetKey: "stars",
+        previewAsset: "builtIn:celebration_stars",
+        purchasedAt: serverTimestamp(),
+        equipped: false,
+      });
+    }),
+  );
+
+  await assertSucceeds(
+    runTransaction(database, async (transaction) => {
+      const user = await transaction.get(userRef);
+      transaction.update(userRef, {
+        tokens: user.data().tokens - 320,
+        lastDigitalRewardPurchase: "frame_neon",
+        updatedAt: serverTimestamp(),
+      });
+      transaction.set(ownedRef, {
+        rewardId: "frame_neon",
+        name: "Neon Profile Frame",
+        description: "A bright neon frame.",
+        cost: 320,
+        category: "profileFrame",
+        assetKey: "neon",
+        previewAsset: "builtIn:frame_neon",
+        purchasedAt: serverTimestamp(),
+        equipped: true,
+      });
+      transaction.set(
+        settingsRef,
+        { profileFrame: "neon", updatedAt: serverTimestamp() },
+        { merge: true },
+      );
+    }),
+  );
+
+  assert.equal((await getDoc(userRef)).data().tokens, 680);
+  assert.equal((await getDoc(ownedRef)).data().equipped, true);
+  assert.equal((await getDoc(settingsRef)).data().profileFrame, "neon");
+
+  await assertFails(
+    setDoc(doc(database, "users/alice/ownedRewards/frame_ocean"), {
+      rewardId: "frame_ocean",
+      name: "Ocean Profile Frame",
+      description: "A calm ocean frame.",
+      cost: 280,
+      category: "profileFrame",
+      assetKey: "ocean",
+      previewAsset: "builtIn:frame_ocean",
+      purchasedAt: serverTimestamp(),
+      equipped: false,
+    }),
+  );
+
+  await assertFails(
+    setDoc(
+      settingsRef,
+      { profileFrame: "ocean", updatedAt: serverTimestamp() },
+      { merge: true },
+    ),
   );
 });
 
