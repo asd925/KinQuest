@@ -217,24 +217,10 @@ class _DeveloperRewardsSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
 
-    return Row(
-      children: [
-        Expanded(
-          child: _RewardCard(
-            icon: Icons.monetization_on,
-            value: '480',
-            label: strings.familyTokens,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _RewardCard(
-            icon: Icons.auto_awesome,
-            value: '2',
-            label: strings.familyWishes,
-          ),
-        ),
-      ],
+    return _RewardCard(
+      icon: Icons.monetization_on,
+      value: '480',
+      label: strings.familyTokens,
     );
   }
 }
@@ -625,24 +611,10 @@ class _RewardsSummary extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      return Row(
-        children: [
-          Expanded(
-            child: _RewardCard(
-              icon: Icons.monetization_on,
-              value: '0',
-              label: strings.familyTokens,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _RewardCard(
-              icon: Icons.auto_awesome,
-              value: '0',
-              label: strings.familyWishes,
-            ),
-          ),
-        ],
+      return _RewardCard(
+        icon: Icons.monetization_on,
+        value: '0',
+        label: strings.familyTokens,
       );
     }
 
@@ -655,24 +627,10 @@ class _RewardsSummary extends StatelessWidget {
         final data = snapshot.data?.data();
         final tokens = data?['tokens'] ?? 0;
 
-        return Row(
-          children: [
-            Expanded(
-              child: _RewardCard(
-                icon: Icons.monetization_on,
-                value: tokens.toString(),
-                label: strings.familyTokens,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _RewardCard(
-                icon: Icons.auto_awesome,
-                value: '0',
-                label: strings.familyWishes,
-              ),
-            ),
-          ],
+        return _RewardCard(
+          icon: Icons.monetization_on,
+          value: tokens.toString(),
+          label: strings.familyTokens,
         );
       },
     );

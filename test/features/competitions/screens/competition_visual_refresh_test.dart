@@ -37,13 +37,17 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('Weekly Championship'), 300);
     expect(
-      find.textContaining('+50 Tokens + Ranking Points', findRichText: true),
+      find.textContaining(
+        '1st: 50 Tokens • 2nd: 20 • 3rd: 10',
+        findRichText: true,
+      ),
       findsOneWidget,
     );
     expect(
       find.textContaining('Family Wish', findRichText: true),
       findsNothing,
     );
+    expect(find.textContaining('Ranking Points'), findsNothing);
 
     await tester.scrollUntilVisible(find.text('Monthly Cup'), 300);
     expect(find.text('Monthly Cup'), findsOneWidget);

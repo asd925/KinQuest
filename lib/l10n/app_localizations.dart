@@ -974,7 +974,7 @@ abstract class AppLocalizations {
   /// No description provided for @weeklyChampionshipReward.
   ///
   /// In en, this message translates to:
-  /// **'+50 Tokens + Ranking Points'**
+  /// **'1st: 50 Tokens • 2nd: 20 • 3rd: 10'**
   String get weeklyChampionshipReward;
 
   /// No description provided for @monthlyCup.
@@ -4454,14 +4454,14 @@ abstract class AppLocalizations {
   /// No description provided for @dailyWinnerRewardSummary.
   ///
   /// In en, this message translates to:
-  /// **'Winner: +{tokens} Tokens + {points} Ranking Points'**
-  String dailyWinnerRewardSummary(int tokens, int points);
+  /// **'Winner: +{tokens} Tokens'**
+  String dailyWinnerRewardSummary(int tokens);
 
   /// No description provided for @dailyRunnerUpRewardSummary.
   ///
   /// In en, this message translates to:
-  /// **'Runner-up: +{points} Ranking Points'**
-  String dailyRunnerUpRewardSummary(int points);
+  /// **'Runner-up: +{tokens} Tokens'**
+  String dailyRunnerUpRewardSummary(int tokens);
 
   /// No description provided for @savingOfficialResult.
   ///
@@ -4520,7 +4520,7 @@ abstract class AppLocalizations {
   /// No description provided for @tieRewardPendingDescription.
   ///
   /// In en, this message translates to:
-  /// **'No Tokens or Ranking Points have been awarded. Only the tied leaders advance to sudden death. No reward is granted until one winner remains.'**
+  /// **'No Tokens have been awarded. Only the tied leaders advance to sudden death. No reward is granted until one winner remains.'**
   String get tieRewardPendingDescription;
 
   /// No description provided for @startSuddenDeathTieBreak.
@@ -4556,20 +4556,20 @@ abstract class AppLocalizations {
   /// No description provided for @championRewardSummary.
   ///
   /// In en, this message translates to:
-  /// **'Champion: +{tokens} Tokens + {points} RP'**
-  String championRewardSummary(int tokens, int points);
+  /// **'Champion: +{tokens} Tokens'**
+  String championRewardSummary(int tokens);
 
   /// No description provided for @runnerUpRewardSummary.
   ///
   /// In en, this message translates to:
-  /// **'Runner-up: +{points} RP'**
-  String runnerUpRewardSummary(int points);
+  /// **'Runner-up: +{tokens} Tokens'**
+  String runnerUpRewardSummary(int tokens);
 
   /// No description provided for @thirdPlaceRewardSummary.
   ///
   /// In en, this message translates to:
-  /// **'Third place: +{points} RP'**
-  String thirdPlaceRewardSummary(int points);
+  /// **'Third place: +{tokens} Tokens'**
+  String thirdPlaceRewardSummary(int tokens);
 
   /// No description provided for @championshipScoringDescription.
   ///
@@ -4682,14 +4682,14 @@ abstract class AppLocalizations {
   /// No description provided for @monthlyChampionRewardSummary.
   ///
   /// In en, this message translates to:
-  /// **'Champion: +{tokens} Tokens + {points} RP + Trophy'**
-  String monthlyChampionRewardSummary(int tokens, int points);
+  /// **'Champion: +{tokens} Tokens + Trophy'**
+  String monthlyChampionRewardSummary(int tokens);
 
   /// No description provided for @semifinalistRewardSummary.
   ///
   /// In en, this message translates to:
-  /// **'Semifinalists: +{points} RP'**
-  String semifinalistRewardSummary(int points);
+  /// **'Semifinalists: +{tokens} Tokens each'**
+  String semifinalistRewardSummary(int tokens);
 
   /// No description provided for @chooseFourCompetitors.
   ///
@@ -6194,8 +6194,8 @@ abstract class AppLocalizations {
   /// No description provided for @dailyWinnerAnnouncement.
   ///
   /// In en, this message translates to:
-  /// **'{name} won today\'s Daily Challenge! +{tokens} Tokens and +{points} Ranking Points.'**
-  String dailyWinnerAnnouncement(String name, int tokens, int points);
+  /// **'{name} won today\'s Daily Challenge! +{tokens} Tokens.'**
+  String dailyWinnerAnnouncement(String name, int tokens);
 
   /// No description provided for @dailyOfficialSaveError.
   ///
@@ -6236,8 +6236,8 @@ abstract class AppLocalizations {
   /// No description provided for @weeklyWinnerAnnouncement.
   ///
   /// In en, this message translates to:
-  /// **'{name} is this week\'s Family Champion! +{tokens} Tokens and +{points} Ranking Points.'**
-  String weeklyWinnerAnnouncement(String name, int tokens, int points);
+  /// **'{name} is this week\'s Family Champion! +{tokens} Tokens.'**
+  String weeklyWinnerAnnouncement(String name, int tokens);
 
   /// No description provided for @weeklyFinalizeError.
   ///
@@ -6302,8 +6302,8 @@ abstract class AppLocalizations {
   /// No description provided for @monthlyWinnerAnnouncement.
   ///
   /// In en, this message translates to:
-  /// **'{name} won the Monthly Cup! +{tokens} Tokens and +{points} Ranking Points.'**
-  String monthlyWinnerAnnouncement(String name, int tokens, int points);
+  /// **'{name} won the Monthly Cup! +{tokens} Tokens.'**
+  String monthlyWinnerAnnouncement(String name, int tokens);
 
   /// No description provided for @monthlyFinalizeError.
   ///
@@ -6362,7 +6362,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickPlayResultsOnly.
   ///
   /// In en, this message translates to:
-  /// **'Session scores only — no Tokens or official Ranking Points change.'**
+  /// **'Session scores only — no Tokens or official competition standings change.'**
   String get quickPlayResultsOnly;
 
   /// No description provided for @gameCompleteTitle.

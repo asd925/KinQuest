@@ -32,6 +32,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
   bool _isSettling = false;
   bool _completedToday = false;
   bool _tieDetected = false;
+  int _completedRunnerUpTokenReward = 0;
 
   String? _familyId;
   String? _winnerId;
@@ -40,7 +41,8 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
 
   CompetitionGameResult? _latestResult;
 
-  DateTime get _today => DateTime.now();
+  // Keep an in-progress game/tie-break attached to the period it opened in.
+  final DateTime _today = DateTime.now();
 
   String get _dateKey => CompetitionPeriod.dailyKey(_today);
 
@@ -119,6 +121,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
       setState(() {
         _familyId = familyId;
         _completedToday = competitionDoc.exists && data?['completed'] == true;
+        _completedRunnerUpTokenReward = data?['rewardCurrency'] == 'tokens'
+            ? (data?['runnerUpTokenReward'] as num?)?.toInt() ?? 0
+            : 0;
         _winnerName = loadedWinnerName;
         _winnerId = loadedWinnerId;
         _isLoading = false;
@@ -210,6 +215,11 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
     CompetitionGameResult result, {
     CompetitionPlayerResult? tieBreakWinner,
   }) async {
+    // Keep the record and immutable payout IDs in the same period even if
+    // the clock rolls into a new day while Firestore retries the transaction.
+    final settlementDate = _today;
+    final competitionId = CompetitionPeriod.dailyCompetitionId(settlementDate);
+    final periodKey = CompetitionPeriod.dailyKey(settlementDate);
     if (_completedToday ||
         _isSettling ||
         (result.isTie && tieBreakWinner == null)) {
@@ -269,6 +279,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
             ? winners.map((player) => player.name).join(', ')
             : winner.name;
         _completedToday = true;
+        _completedRunnerUpTokenReward = runnersUp.isEmpty
+            ? 0
+            : CompetitionRewards.dailyRunnerUpTokens;
         _isSettling = false;
       });
 
@@ -282,7 +295,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
           .collection('families')
           .doc(familyId!)
           .collection('officialCompetitions')
-          .doc(_competitionId);
+          .doc(competitionId);
 
       final settled = await firestore.runTransaction<bool>((transaction) async {
         final existingCompetition = await transaction.get(competitionRef);
@@ -292,10 +305,10 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
         }
 
         transaction.set(competitionRef, {
-          'id': _competitionId,
+          'id': competitionId,
           'familyId': familyId,
           'type': 'daily',
-          'periodKey': _dateKey,
+          'periodKey': periodKey,
           'gameId': result.gameId,
           'gameName': result.gameName,
           'players': rankedPlayers.map((player) => player.toMap()).toList(),
@@ -308,8 +321,11 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
           if (tieBreakWinner != null) 'tieBreakWinnerId': tieBreakWinner.userId,
           'completed': true,
           'rewardGranted': true,
+          'rewardCurrency': 'tokens',
           'tokenReward': CompetitionRewards.dailyWinnerTokens,
-          'rankingPointReward': CompetitionRewards.dailyWinnerRankingPoints,
+          'runnerUpTokenReward': runnersUp.isEmpty
+              ? 0
+              : CompetitionRewards.dailyRunnerUpTokens,
           'completedAt': FieldValue.serverTimestamp(),
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -324,40 +340,38 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
           final isRunnerUp = runnersUp.any(
             (runnerUp) => runnerUp.userId == player.userId,
           );
+          final tokenReward = isWinner
+              ? CompetitionRewards.dailyWinnerTokens
+              : isRunnerUp
+              ? CompetitionRewards.dailyRunnerUpTokens
+              : 0;
 
           transaction.set(userRef, {
             'gamesPlayed': FieldValue.increment(1),
             'updatedAt': FieldValue.serverTimestamp(),
+            if (tokenReward > 0) 'tokens': FieldValue.increment(tokenReward),
             if (isWinner) ...{
-              'tokens': FieldValue.increment(
-                CompetitionRewards.dailyWinnerTokens,
-              ),
-              'rankingPoints': FieldValue.increment(
-                CompetitionRewards.dailyWinnerRankingPoints,
-              ),
               'officialWins': FieldValue.increment(1),
               'dailyWins': FieldValue.increment(1),
-            } else if (isRunnerUp) ...{
-              'rankingPoints': FieldValue.increment(
-                CompetitionRewards.dailyRunnerUpRankingPoints,
-              ),
             },
           }, SetOptions(merge: true));
 
-          if (isWinner) {
+          if (tokenReward > 0) {
             final tokenTransactionRef = userRef
                 .collection('tokenTransactions')
-                .doc();
+                .doc('${familyId}_$competitionId');
 
             transaction.set(tokenTransactionRef, {
               'userId': player.userId,
               'familyId': familyId,
-              'amount': CompetitionRewards.dailyWinnerTokens,
+              'amount': tokenReward,
               'type': 'earned',
-              'reason': 'Daily Challenge Winner',
+              'reason': isWinner
+                  ? 'Daily Challenge Winner'
+                  : 'Daily Challenge Runner Up',
               'relatedRewardId': null,
               'relatedRequestId': null,
-              'relatedCompetitionId': _competitionId,
+              'relatedCompetitionId': competitionId,
               'createdAt': FieldValue.serverTimestamp(),
             });
           }
@@ -372,6 +386,10 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
         await _loadStatus();
 
         if (!mounted) return;
+
+        setState(() {
+          _isSettling = false;
+        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -389,6 +407,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
             ? winners.map((player) => player.name).join(', ')
             : winner.name;
         _completedToday = true;
+        _completedRunnerUpTokenReward = runnersUp.isEmpty
+            ? 0
+            : CompetitionRewards.dailyRunnerUpTokens;
         _isSettling = false;
       });
 
@@ -402,7 +423,6 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
             AppLocalizations.of(context)!.dailyWinnerAnnouncement(
               displayedWinnerNames,
               CompetitionRewards.dailyWinnerTokens,
-              CompetitionRewards.dailyWinnerRankingPoints,
             ),
           ),
         ),
@@ -456,6 +476,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
 
   Widget _buildChallenge() {
     final strings = AppLocalizations.of(context)!;
+    final runnerUpTokenReward = _completedToday
+        ? _completedRunnerUpTokenReward
+        : CompetitionRewards.dailyRunnerUpTokens;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -540,16 +563,16 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                                 Text(
                                   strings.dailyWinnerRewardSummary(
                                     CompetitionRewards.dailyWinnerTokens,
-                                    CompetitionRewards.dailyWinnerRankingPoints,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  strings.dailyRunnerUpRewardSummary(
-                                    CompetitionRewards
-                                        .dailyRunnerUpRankingPoints,
+                                if (runnerUpTokenReward > 0) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    strings.dailyRunnerUpRewardSummary(
+                                      runnerUpTokenReward,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           ),
@@ -622,12 +645,6 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
           SilaCelebrationReward(
             icon: Icons.stars_rounded,
             label: strings.tokenBonus(CompetitionRewards.dailyWinnerTokens),
-          ),
-          SilaCelebrationReward(
-            icon: Icons.trending_up_rounded,
-            label: strings.rankingPointBonus(
-              CompetitionRewards.dailyWinnerRankingPoints,
-            ),
           ),
           SilaCelebrationReward(
             icon: Icons.favorite_rounded,

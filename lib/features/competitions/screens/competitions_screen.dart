@@ -41,7 +41,7 @@ class CompetitionsScreen extends StatelessWidget {
       title: 'Weekly Championship',
       description:
           'Compete across four official games and become this week\'s Family Champion.',
-      reward: '+50 Tokens + Ranking Points',
+      reward: '1st: 50 Tokens • 2nd: 20 • 3rd: 10',
       accent: AppTheme.goldColor,
     ),
     _CompetitionItem(

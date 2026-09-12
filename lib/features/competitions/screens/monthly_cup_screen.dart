@@ -44,8 +44,12 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
   String? _championName;
   String? _runnerUpName;
   final List<String> _semifinalistNames = [];
+  int _championTokenReward = 0;
+  int _runnerUpTokenReward = 0;
+  int _semifinalistTokenReward = 0;
 
-  DateTime get _today => DateTime.now();
+  // A loaded bracket must not switch months while a match is in progress.
+  final DateTime _today = DateTime.now();
 
   String get _monthKey => CompetitionPeriod.monthlyKey(_today);
 
@@ -227,6 +231,13 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
         _championId = data?['winnerId'] as String?;
         _championName = data?['winnerName'] as String?;
         _runnerUpName = data?['runnerUpName'] as String?;
+        // Completed cups display only the Tokens recorded when they settled.
+        // Legacy RP prizes must not appear to have been paid as Tokens.
+        _championTokenReward = (data?['tokenReward'] as num?)?.toInt() ?? 0;
+        _runnerUpTokenReward =
+            (data?['runnerUpTokenReward'] as num?)?.toInt() ?? 0;
+        _semifinalistTokenReward =
+            (data?['semifinalistTokenReward'] as num?)?.toInt() ?? 0;
         _semifinalistNames
           ..clear()
           ..addAll(storedSemifinalistNames);
@@ -555,6 +566,12 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
   }
 
   Future<void> _finishCup() async {
+    // Record, trophy and payout IDs must stay in one month across retries.
+    final settlementDate = _today;
+    final competitionId = CompetitionPeriod.monthlyCompetitionId(
+      settlementDate,
+    );
+    final monthKey = CompetitionPeriod.monthlyKey(settlementDate);
     final totalMatches = _selectedPlayers.length - 1;
 
     if (_matches.length < totalMatches || _completed || _isSaving) {
@@ -612,6 +629,9 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
         _championId = championId;
         _championName = championName;
         _runnerUpName = runnerUpName;
+        _championTokenReward = CompetitionRewards.monthlyChampionTokens;
+        _runnerUpTokenReward = CompetitionRewards.monthlyRunnerUpTokens;
+        _semifinalistTokenReward = CompetitionRewards.monthlySemifinalistTokens;
 
         _semifinalistNames
           ..clear()
@@ -641,13 +661,13 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
           .collection('families')
           .doc(familyId)
           .collection('officialCompetitions')
-          .doc(_competitionId);
+          .doc(competitionId);
 
       final trophyRef = firestore
           .collection('families')
           .doc(familyId)
           .collection('trophies')
-          .doc(_competitionId);
+          .doc(competitionId);
 
       final settled = await firestore.runTransaction<bool>((transaction) async {
         final existing = await transaction.get(competitionRef);
@@ -659,6 +679,7 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
         transaction.set(competitionRef, {
           'completed': true,
           'rewardGranted': true,
+          'rewardCurrency': 'tokens',
           'winnerId': championId,
           'winnerName': championName,
           'runnerUpId': runnerUpId,
@@ -666,12 +687,9 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
           'semifinalistIds': semifinalLoserIds,
           'semifinalistNames': semifinalLoserNames,
           'tokenReward': CompetitionRewards.monthlyChampionTokens,
-          'championRankingPointReward':
-              CompetitionRewards.monthlyChampionRankingPoints,
-          'runnerUpRankingPointReward':
-              CompetitionRewards.monthlyRunnerUpRankingPoints,
-          'semifinalistRankingPointReward':
-              CompetitionRewards.monthlySemifinalistRankingPoints,
+          'runnerUpTokenReward': CompetitionRewards.monthlyRunnerUpTokens,
+          'semifinalistTokenReward':
+              CompetitionRewards.monthlySemifinalistTokens,
           'completedAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
@@ -691,9 +709,6 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
           'tokens': FieldValue.increment(
             CompetitionRewards.monthlyChampionTokens,
           ),
-          'rankingPoints': FieldValue.increment(
-            CompetitionRewards.monthlyChampionRankingPoints,
-          ),
           'officialWins': FieldValue.increment(1),
           'monthlyWins': FieldValue.increment(1),
           'trophies': FieldValue.increment(1),
@@ -702,7 +717,7 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
 
         final tokenTransactionRef = championRef
             .collection('tokenTransactions')
-            .doc();
+            .doc('${familyId}_$competitionId');
 
         transaction.set(tokenTransactionRef, {
           'userId': championId,
@@ -712,18 +727,35 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
           'reason': 'Monthly Cup Champion',
           'relatedRewardId': null,
           'relatedRequestId': null,
-          'relatedCompetitionId': _competitionId,
+          'relatedCompetitionId': competitionId,
           'createdAt': FieldValue.serverTimestamp(),
         });
 
         final runnerUpRef = firestore.collection('users').doc(runnerUpId);
 
         transaction.set(runnerUpRef, {
-          'rankingPoints': FieldValue.increment(
-            CompetitionRewards.monthlyRunnerUpRankingPoints,
+          'tokens': FieldValue.increment(
+            CompetitionRewards.monthlyRunnerUpTokens,
           ),
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+
+        transaction.set(
+          runnerUpRef
+              .collection('tokenTransactions')
+              .doc('${familyId}_$competitionId'),
+          {
+            'userId': runnerUpId,
+            'familyId': familyId,
+            'amount': CompetitionRewards.monthlyRunnerUpTokens,
+            'type': 'earned',
+            'reason': 'Monthly Cup Runner-up',
+            'relatedRewardId': null,
+            'relatedRequestId': null,
+            'relatedCompetitionId': competitionId,
+            'createdAt': FieldValue.serverTimestamp(),
+          },
+        );
 
         for (final semifinalistId in semifinalLoserIds) {
           final semifinalistRef = firestore
@@ -731,17 +763,34 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
               .doc(semifinalistId);
 
           transaction.set(semifinalistRef, {
-            'rankingPoints': FieldValue.increment(
-              CompetitionRewards.monthlySemifinalistRankingPoints,
+            'tokens': FieldValue.increment(
+              CompetitionRewards.monthlySemifinalistTokens,
             ),
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
+
+          transaction.set(
+            semifinalistRef
+                .collection('tokenTransactions')
+                .doc('${familyId}_$competitionId'),
+            {
+              'userId': semifinalistId,
+              'familyId': familyId,
+              'amount': CompetitionRewards.monthlySemifinalistTokens,
+              'type': 'earned',
+              'reason': 'Monthly Cup Semifinalist',
+              'relatedRewardId': null,
+              'relatedRequestId': null,
+              'relatedCompetitionId': competitionId,
+              'createdAt': FieldValue.serverTimestamp(),
+            },
+          );
         }
 
         transaction.set(trophyRef, {
-          'id': _competitionId,
+          'id': competitionId,
           'type': 'monthlyCup',
-          'monthKey': _monthKey,
+          'monthKey': monthKey,
           'title': 'Monthly Cup Champion',
           'winnerId': championId,
           'winnerName': championName,
@@ -767,6 +816,9 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
         _championId = championId;
         _championName = championName;
         _runnerUpName = runnerUpName;
+        _championTokenReward = CompetitionRewards.monthlyChampionTokens;
+        _runnerUpTokenReward = CompetitionRewards.monthlyRunnerUpTokens;
+        _semifinalistTokenReward = CompetitionRewards.monthlySemifinalistTokens;
 
         _semifinalistNames
           ..clear()
@@ -780,7 +832,6 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
         AppLocalizations.of(context)!.monthlyWinnerAnnouncement(
           championName,
           CompetitionRewards.monthlyChampionTokens,
-          CompetitionRewards.monthlyChampionRankingPoints,
         ),
       );
     } catch (_) {
@@ -930,17 +981,16 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
                 Text(
                   strings.monthlyChampionRewardSummary(
                     CompetitionRewards.monthlyChampionTokens,
-                    CompetitionRewards.monthlyChampionRankingPoints,
                   ),
                 ),
                 Text(
                   strings.runnerUpRewardSummary(
-                    CompetitionRewards.monthlyRunnerUpRankingPoints,
+                    CompetitionRewards.monthlyRunnerUpTokens,
                   ),
                 ),
                 Text(
                   strings.semifinalistRewardSummary(
-                    CompetitionRewards.monthlySemifinalistRankingPoints,
+                    CompetitionRewards.monthlySemifinalistTokens,
                   ),
                 ),
               ],
@@ -1267,18 +1317,11 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
             mascotOutfit: digitalRewards.mascotOutfit,
             mascotAura: digitalRewards.mascotAura,
             rewards: [
-              SilaCelebrationReward(
-                icon: Icons.stars_rounded,
-                label: strings.tokenBonus(
-                  CompetitionRewards.monthlyChampionTokens,
+              if (_championTokenReward > 0)
+                SilaCelebrationReward(
+                  icon: Icons.stars_rounded,
+                  label: strings.tokenBonus(_championTokenReward),
                 ),
-              ),
-              SilaCelebrationReward(
-                icon: Icons.trending_up_rounded,
-                label: strings.rankingPointBonus(
-                  CompetitionRewards.monthlyChampionRankingPoints,
-                ),
-              ),
               SilaCelebrationReward(
                 icon: Icons.emoji_events_rounded,
                 label: strings.cupTrophy,
@@ -1298,10 +1341,9 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
           icon: Icons.workspace_premium_rounded,
           placement: strings.champion,
           name: _championName ?? strings.champion,
-          reward: strings.monthlyChampionRewardSummary(
-            CompetitionRewards.monthlyChampionTokens,
-            CompetitionRewards.monthlyChampionRankingPoints,
-          ),
+          reward: _championTokenReward > 0
+              ? strings.monthlyChampionRewardSummary(_championTokenReward)
+              : strings.cupTrophy,
           emphasized: true,
         ),
         if (_runnerUpName != null) ...[
@@ -1310,9 +1352,9 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
             icon: Icons.military_tech_rounded,
             placement: strings.runnerUp,
             name: _runnerUpName!,
-            reward: strings.runnerUpRewardSummary(
-              CompetitionRewards.monthlyRunnerUpRankingPoints,
-            ),
+            reward: _runnerUpTokenReward > 0
+                ? strings.runnerUpRewardSummary(_runnerUpTokenReward)
+                : null,
           ),
         ],
         ..._semifinalistNames.map(
@@ -1322,9 +1364,9 @@ class _MonthlyCupScreenState extends State<MonthlyCupScreen> {
               icon: Icons.shield_outlined,
               placement: strings.semifinalist,
               name: name,
-              reward: strings.semifinalistRewardSummary(
-                CompetitionRewards.monthlySemifinalistRankingPoints,
-              ),
+              reward: _semifinalistTokenReward > 0
+                  ? strings.semifinalistRewardSummary(_semifinalistTokenReward)
+                  : null,
             ),
           ),
         ),
@@ -1377,7 +1419,7 @@ class _CupPlacementCard extends StatelessWidget {
   final IconData icon;
   final String placement;
   final String name;
-  final String reward;
+  final String? reward;
   final bool emphasized;
 
   @override
@@ -1389,7 +1431,7 @@ class _CupPlacementCard extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(child: Icon(icon)),
         title: Text(name, style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Text(reward),
+        subtitle: reward == null ? null : Text(reward!),
         trailing: Text(
           placement,
           style: TextStyle(

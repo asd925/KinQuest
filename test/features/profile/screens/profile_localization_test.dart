@@ -7,6 +7,47 @@ import 'package:kinquest/features/profile/screens/profile_screen.dart';
 import 'package:kinquest/l10n/app_localizations.dart';
 
 void main() {
+  for (final languageCode in ['en', 'ar']) {
+    testWidgets(
+      '$languageCode profile rewards show only a full-width Family Tokens balance',
+      (tester) async {
+        await _setViewport(tester, const Size(320, 568));
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            locale: Locale(languageCode),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: const ProfileScreen(developerPreview: true),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final strings = AppLocalizations.of(
+          tester.element(find.byType(ProfileScreen)),
+        )!;
+        final tokenLabel = find.text(strings.familyTokens);
+        await tester.scrollUntilVisible(
+          tokenLabel,
+          240,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        expect(tokenLabel, findsOneWidget);
+        expect(find.text('480'), findsOneWidget);
+        expect(find.text(strings.familyWishes), findsNothing);
+        final tokenCard = find.ancestor(
+          of: tokenLabel,
+          matching: find.byType(Card),
+        );
+        expect(tokenCard, findsOneWidget);
+        expect(tester.getSize(tokenCard).width, 280);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('Arabic developer profile stays usable on a narrow screen', (
     tester,
   ) async {

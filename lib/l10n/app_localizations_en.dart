@@ -472,7 +472,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyChampionshipDescription => 'Compete across several game rounds and become this week\'s Family Champion.';
 
   @override
-  String get weeklyChampionshipReward => '+50 Tokens + Ranking Points';
+  String get weeklyChampionshipReward => '1st: 50 Tokens • 2nd: 20 • 3rd: 10';
 
   @override
   String get monthlyCup => 'Monthly Cup';
@@ -2313,13 +2313,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get officialCompetitionRule => 'One official result per family per day. Quick Play results do not affect these rewards.';
 
   @override
-  String dailyWinnerRewardSummary(int tokens, int points) {
-    return 'Winner: +$tokens Tokens + $points Ranking Points';
+  String dailyWinnerRewardSummary(int tokens) {
+    return 'Winner: +$tokens Tokens';
   }
 
   @override
-  String dailyRunnerUpRewardSummary(int points) {
-    return 'Runner-up: +$points Ranking Points';
+  String dailyRunnerUpRewardSummary(int tokens) {
+    return 'Runner-up: +$tokens Tokens';
   }
 
   @override
@@ -2356,7 +2356,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tieDetected => 'Tie detected';
 
   @override
-  String get tieRewardPendingDescription => 'No Tokens or Ranking Points have been awarded. Only the tied leaders advance to sudden death. No reward is granted until one winner remains.';
+  String get tieRewardPendingDescription => 'No Tokens have been awarded. Only the tied leaders advance to sudden death. No reward is granted until one winner remains.';
 
   @override
   String get startSuddenDeathTieBreak => 'Start Sudden-Death Tie-Break';
@@ -2376,18 +2376,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get championshipRewards => 'Championship rewards';
 
   @override
-  String championRewardSummary(int tokens, int points) {
-    return 'Champion: +$tokens Tokens + $points RP';
+  String championRewardSummary(int tokens) {
+    return 'Champion: +$tokens Tokens';
   }
 
   @override
-  String runnerUpRewardSummary(int points) {
-    return 'Runner-up: +$points RP';
+  String runnerUpRewardSummary(int tokens) {
+    return 'Runner-up: +$tokens Tokens';
   }
 
   @override
-  String thirdPlaceRewardSummary(int points) {
-    return 'Third place: +$points RP';
+  String thirdPlaceRewardSummary(int tokens) {
+    return 'Third place: +$tokens Tokens';
   }
 
   @override
@@ -2457,13 +2457,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monthlyRewards => 'Monthly rewards';
 
   @override
-  String monthlyChampionRewardSummary(int tokens, int points) {
-    return 'Champion: +$tokens Tokens + $points RP + Trophy';
+  String monthlyChampionRewardSummary(int tokens) {
+    return 'Champion: +$tokens Tokens + Trophy';
   }
 
   @override
-  String semifinalistRewardSummary(int points) {
-    return 'Semifinalists: +$points RP';
+  String semifinalistRewardSummary(int tokens) {
+    return 'Semifinalists: +$tokens Tokens each';
   }
 
   @override
@@ -3341,8 +3341,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyAlreadyCompleted => 'Today\'s Daily Challenge has already been completed.';
 
   @override
-  String dailyWinnerAnnouncement(String name, int tokens, int points) {
-    return '$name won today\'s Daily Challenge! +$tokens Tokens and +$points Ranking Points.';
+  String dailyWinnerAnnouncement(String name, int tokens) {
+    return '$name won today\'s Daily Challenge! +$tokens Tokens.';
   }
 
   @override
@@ -3364,8 +3364,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyRoundSaveError => 'Could not save this championship round. Please try again.';
 
   @override
-  String weeklyWinnerAnnouncement(String name, int tokens, int points) {
-    return '$name is this week\'s Family Champion! +$tokens Tokens and +$points Ranking Points.';
+  String weeklyWinnerAnnouncement(String name, int tokens) {
+    return '$name is this week\'s Family Champion! +$tokens Tokens.';
   }
 
   @override
@@ -3401,8 +3401,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monthlyMatchSaveError => 'Could not save this Monthly Cup match. Please try again.';
 
   @override
-  String monthlyWinnerAnnouncement(String name, int tokens, int points) {
-    return '$name won the Monthly Cup! +$tokens Tokens and +$points Ranking Points.';
+  String monthlyWinnerAnnouncement(String name, int tokens) {
+    return '$name won the Monthly Cup! +$tokens Tokens.';
   }
 
   @override
@@ -3437,7 +3437,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickPlayLeaderboard => 'Quick Play Leaderboard';
 
   @override
-  String get quickPlayResultsOnly => 'Session scores only — no Tokens or official Ranking Points change.';
+  String get quickPlayResultsOnly => 'Session scores only — no Tokens or official competition standings change.';
 
   @override
   String gameCompleteTitle(String game) {

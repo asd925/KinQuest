@@ -475,7 +475,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get weeklyChampionshipDescription => 'تنافسوا عبر عدة جولات ليصبح أحدكم بطل العائلة لهذا الأسبوع.';
 
   @override
-  String get weeklyChampionshipReward => '+٥٠ رمزًا + نقاط الترتيب';
+  String get weeklyChampionshipReward => 'الأول: ٥٠ رمزًا • الثاني: ٢٠ • الثالث: ١٠';
 
   @override
   String get monthlyCup => 'الكأس الشهري';
@@ -2335,13 +2335,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get officialCompetitionRule => 'نتيجة رسمية واحدة لكل عائلة يوميًا. نتائج اللعب السريع لا تؤثر في هذه المكافآت.';
 
   @override
-  String dailyWinnerRewardSummary(int tokens, int points) {
-    return 'الفائز: +$tokens رمزًا + $points نقطة ترتيب';
+  String dailyWinnerRewardSummary(int tokens) {
+    return 'الفائز: +$tokens رمزًا';
   }
 
   @override
-  String dailyRunnerUpRewardSummary(int points) {
-    return 'الوصيف: +$points نقطة ترتيب';
+  String dailyRunnerUpRewardSummary(int tokens) {
+    return 'الوصيف: +$tokens رمزًا';
   }
 
   @override
@@ -2378,7 +2378,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tieDetected => 'تعادل في النتيجة';
 
   @override
-  String get tieRewardPendingDescription => 'لم تُمنح أي رموز أو نقاط ترتيب. يتأهل المتصدرون المتعادلون فقط إلى الجولة الحاسمة، ولا تُمنح المكافأة حتى يتبقى فائز واحد.';
+  String get tieRewardPendingDescription => 'لم تُمنح أي رموز. يتأهل المتصدرون المتعادلون فقط إلى الجولة الحاسمة، ولا تُمنح المكافأة حتى يتبقى فائز واحد.';
 
   @override
   String get startSuddenDeathTieBreak => 'ابدأ جولة كسر التعادل';
@@ -2398,18 +2398,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get championshipRewards => 'مكافآت البطولة';
 
   @override
-  String championRewardSummary(int tokens, int points) {
-    return 'البطل: +$tokens رمزًا + $points نقطة ترتيب';
+  String championRewardSummary(int tokens) {
+    return 'البطل: +$tokens رمزًا';
   }
 
   @override
-  String runnerUpRewardSummary(int points) {
-    return 'الوصيف: +$points نقطة ترتيب';
+  String runnerUpRewardSummary(int tokens) {
+    return 'الوصيف: +$tokens رمزًا';
   }
 
   @override
-  String thirdPlaceRewardSummary(int points) {
-    return 'المركز الثالث: +$points نقطة ترتيب';
+  String thirdPlaceRewardSummary(int tokens) {
+    return 'المركز الثالث: +$tokens رمزًا';
   }
 
   @override
@@ -2480,13 +2480,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get monthlyRewards => 'مكافآت الشهر';
 
   @override
-  String monthlyChampionRewardSummary(int tokens, int points) {
-    return 'البطل: +$tokens رمزًا + $points نقطة ترتيب + كأس';
+  String monthlyChampionRewardSummary(int tokens) {
+    return 'البطل: +$tokens رمزًا + كأس';
   }
 
   @override
-  String semifinalistRewardSummary(int points) {
-    return 'المتأهلون لنصف النهائي: +$points نقطة ترتيب';
+  String semifinalistRewardSummary(int tokens) {
+    return 'المتأهلون لنصف النهائي: +$tokens رمزًا لكل متأهل';
   }
 
   @override
@@ -3365,8 +3365,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dailyAlreadyCompleted => 'اكتمل تحدي اليوم بالفعل.';
 
   @override
-  String dailyWinnerAnnouncement(String name, int tokens, int points) {
-    return 'فاز $name بتحدي اليوم! +$tokens رمزًا و+$points نقطة ترتيب.';
+  String dailyWinnerAnnouncement(String name, int tokens) {
+    return 'فاز $name بتحدي اليوم! +$tokens رمزًا.';
   }
 
   @override
@@ -3388,8 +3388,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get weeklyRoundSaveError => 'تعذر حفظ جولة البطولة. حاول مجددًا.';
 
   @override
-  String weeklyWinnerAnnouncement(String name, int tokens, int points) {
-    return 'تُوّج $name بطلًا للعائلة هذا الأسبوع! +$tokens رمزًا و+$points نقطة ترتيب.';
+  String weeklyWinnerAnnouncement(String name, int tokens) {
+    return 'تُوّج $name بطلًا للعائلة هذا الأسبوع! +$tokens رمزًا.';
   }
 
   @override
@@ -3425,8 +3425,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get monthlyMatchSaveError => 'تعذر حفظ مباراة الكأس الشهري. حاول مجددًا.';
 
   @override
-  String monthlyWinnerAnnouncement(String name, int tokens, int points) {
-    return 'فاز $name بالكأس الشهري! +$tokens رمزًا و+$points نقطة ترتيب.';
+  String monthlyWinnerAnnouncement(String name, int tokens) {
+    return 'فاز $name بالكأس الشهري! +$tokens رمزًا.';
   }
 
   @override
@@ -3461,7 +3461,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get quickPlayLeaderboard => 'ترتيب اللعب السريع';
 
   @override
-  String get quickPlayResultsOnly => 'نتائج هذه الجلسة فقط — لا تتغير الرموز أو نقاط الترتيب الرسمية.';
+  String get quickPlayResultsOnly => 'نتائج هذه الجلسة فقط — لا تتغير الرموز أو ترتيب المنافسات الرسمية.';
 
   @override
   String gameCompleteTitle(String game) {

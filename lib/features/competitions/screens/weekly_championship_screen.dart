@@ -41,12 +41,16 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
   String? _championId;
   String? _championName;
   _WeeklyLoadError? _loadError;
+  int _championTokenReward = CompetitionRewards.weeklyChampionTokens;
+  int _runnerUpTokenReward = CompetitionRewards.weeklyRunnerUpTokens;
+  int _thirdPlaceTokenReward = CompetitionRewards.weeklyThirdPlaceTokens;
 
   final List<_WeeklyRoundRecord> _rounds = [];
 
   late final List<OfficialCompetitionGame> _weeklyGames = _gamesForWeek();
 
-  DateTime get _today => DateTime.now();
+  // Keep loaded rounds and a pending tie-break in the same weekly session.
+  final DateTime _today = DateTime.now();
 
   DateTime get _weekMonday {
     final date = DateTime(_today.year, _today.month, _today.day);
@@ -168,6 +172,19 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
           ..addAll(loadedRounds);
 
         _completed = competitionDoc.exists && data?['completed'] == true;
+
+        // Completed records show only the Tokens that were actually awarded.
+        // Older championships paid RP, not Tokens, to the lower placements.
+        _championTokenReward = _completed
+            ? (data?['tokenReward'] as num?)?.toInt() ??
+                  CompetitionRewards.weeklyChampionTokens
+            : CompetitionRewards.weeklyChampionTokens;
+        _runnerUpTokenReward = _completed
+            ? (data?['runnerUpTokenReward'] as num?)?.toInt() ?? 0
+            : CompetitionRewards.weeklyRunnerUpTokens;
+        _thirdPlaceTokenReward = _completed
+            ? (data?['thirdPlaceTokenReward'] as num?)?.toInt() ?? 0
+            : CompetitionRewards.weeklyThirdPlaceTokens;
 
         _championId = data?['winnerId'] as String?;
         _championName = data?['winnerName'] as String?;
@@ -528,6 +545,10 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
     required String championId,
     required bool tieBreakUsed,
   }) async {
+    // Transaction retries must not move an award into the following week.
+    final settlementDate = _today;
+    final competitionId = CompetitionPeriod.weeklyCompetitionId(settlementDate);
+    final weekKey = CompetitionPeriod.weeklyKey(settlementDate);
     if (_completed || _isSettling) {
       return;
     }
@@ -577,12 +598,12 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
           .collection('families')
           .doc(familyId)
           .collection('officialCompetitions')
-          .doc(_competitionId);
+          .doc(competitionId);
       final trophyRef = firestore
           .collection('families')
           .doc(familyId)
           .collection('trophies')
-          .doc(_competitionId);
+          .doc(competitionId);
 
       final settled = await firestore.runTransaction<bool>((transaction) async {
         final existing = await transaction.get(competitionRef);
@@ -600,17 +621,26 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
           'winnerName': champion.name,
           'tieBreakUsed': tieBreakUsed,
           if (tieBreakUsed) 'tieBreakWinnerId': champion.userId,
-          'standings': placements.map((standing) => standing.toMap()).toList(),
+          'standings': placements
+              .map(
+                (standing) => {
+                  ...standing.toMap(),
+                  'tokenReward': _tokenRewardForPlacement(standing.placement),
+                },
+              )
+              .toList(),
           'tokenReward': CompetitionRewards.weeklyChampionTokens,
-          'rankingPointReward': CompetitionRewards.weeklyChampionRankingPoints,
+          'rewardCurrency': 'tokens',
+          'runnerUpTokenReward': CompetitionRewards.weeklyRunnerUpTokens,
+          'thirdPlaceTokenReward': CompetitionRewards.weeklyThirdPlaceTokens,
           'completedAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
         transaction.set(trophyRef, {
-          'id': _competitionId,
+          'id': competitionId,
           'type': 'weeklyChampionship',
-          'weekKey': _weekKey,
+          'weekKey': weekKey,
           'title': 'Weekly Championship Winner',
           'winnerId': champion.userId,
           'winnerName': champion.name,
@@ -621,37 +651,38 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
         for (final placement in placements) {
           final userRef = firestore.collection('users').doc(placement.userId);
 
-          final rankingReward = _rankingRewardForPlacement(placement.placement);
+          final tokenReward = _tokenRewardForPlacement(placement.placement);
 
           final isChampion = placement.userId == champion.userId;
 
           transaction.set(userRef, {
             'gamesPlayed': FieldValue.increment(placement.roundsPlayed),
-            'rankingPoints': FieldValue.increment(rankingReward),
+            if (tokenReward > 0) 'tokens': FieldValue.increment(tokenReward),
             'updatedAt': FieldValue.serverTimestamp(),
             if (isChampion) ...{
-              'tokens': FieldValue.increment(
-                CompetitionRewards.weeklyChampionTokens,
-              ),
               'officialWins': FieldValue.increment(1),
               'weeklyWins': FieldValue.increment(1),
             },
           }, SetOptions(merge: true));
 
-          if (isChampion) {
+          if (tokenReward > 0) {
             final tokenTransactionRef = userRef
                 .collection('tokenTransactions')
-                .doc();
+                .doc('${familyId}_$competitionId');
 
             transaction.set(tokenTransactionRef, {
               'userId': placement.userId,
               'familyId': familyId,
-              'amount': CompetitionRewards.weeklyChampionTokens,
+              'amount': tokenReward,
               'type': 'earned',
-              'reason': 'Weekly Championship Winner',
+              'reason': switch (placement.placement) {
+                1 => 'Weekly Championship Winner',
+                2 => 'Weekly Championship Runner-up',
+                _ => 'Weekly Championship Third Place',
+              },
               'relatedRewardId': null,
               'relatedRequestId': null,
-              'relatedCompetitionId': _competitionId,
+              'relatedCompetitionId': competitionId,
               'createdAt': FieldValue.serverTimestamp(),
             });
           }
@@ -684,7 +715,6 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
             AppLocalizations.of(context)!.weeklyWinnerAnnouncement(
               champion.name,
               CompetitionRewards.weeklyChampionTokens,
-              CompetitionRewards.weeklyChampionRankingPoints,
             ),
           ),
         ),
@@ -750,14 +780,14 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
     return result;
   }
 
-  int _rankingRewardForPlacement(int placement) {
+  int _tokenRewardForPlacement(int placement) {
     switch (placement) {
       case 1:
-        return CompetitionRewards.weeklyChampionRankingPoints;
+        return CompetitionRewards.weeklyChampionTokens;
       case 2:
-        return CompetitionRewards.weeklyRunnerUpRankingPoints;
+        return CompetitionRewards.weeklyRunnerUpTokens;
       case 3:
-        return CompetitionRewards.weeklyThirdPlaceRankingPoints;
+        return CompetitionRewards.weeklyThirdPlaceTokens;
       default:
         return 0;
     }
@@ -853,22 +883,11 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  strings.championRewardSummary(
-                    CompetitionRewards.weeklyChampionTokens,
-                    CompetitionRewards.weeklyChampionRankingPoints,
-                  ),
-                ),
-                Text(
-                  strings.runnerUpRewardSummary(
-                    CompetitionRewards.weeklyRunnerUpRankingPoints,
-                  ),
-                ),
-                Text(
-                  strings.thirdPlaceRewardSummary(
-                    CompetitionRewards.weeklyThirdPlaceRankingPoints,
-                  ),
-                ),
+                Text(strings.championRewardSummary(_championTokenReward)),
+                if (_runnerUpTokenReward > 0)
+                  Text(strings.runnerUpRewardSummary(_runnerUpTokenReward)),
+                if (_thirdPlaceTokenReward > 0)
+                  Text(strings.thirdPlaceRewardSummary(_thirdPlaceTokenReward)),
                 const SizedBox(height: 10),
                 Text(strings.championshipScoringDescription),
               ],
@@ -1007,23 +1026,16 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
                   children: [
                     Text(strings.roundsPlayed(standing.roundsPlayed)),
                     if (_completed && placement == 1)
+                      Text(strings.championRewardSummary(_championTokenReward))
+                    else if (_completed &&
+                        placement == 2 &&
+                        _runnerUpTokenReward > 0)
+                      Text(strings.runnerUpRewardSummary(_runnerUpTokenReward))
+                    else if (_completed &&
+                        placement == 3 &&
+                        _thirdPlaceTokenReward > 0)
                       Text(
-                        strings.championRewardSummary(
-                          CompetitionRewards.weeklyChampionTokens,
-                          CompetitionRewards.weeklyChampionRankingPoints,
-                        ),
-                      )
-                    else if (_completed && placement == 2)
-                      Text(
-                        strings.runnerUpRewardSummary(
-                          CompetitionRewards.weeklyRunnerUpRankingPoints,
-                        ),
-                      )
-                    else if (_completed && placement == 3)
-                      Text(
-                        strings.thirdPlaceRewardSummary(
-                          CompetitionRewards.weeklyThirdPlaceRankingPoints,
-                        ),
+                        strings.thirdPlaceRewardSummary(_thirdPlaceTokenReward),
                       ),
                   ],
                 ),
@@ -1062,13 +1074,7 @@ class _WeeklyChampionshipScreenState extends State<WeeklyChampionshipScreen> {
         rewards: [
           SilaCelebrationReward(
             icon: Icons.stars_rounded,
-            label: strings.tokenBonus(CompetitionRewards.weeklyChampionTokens),
-          ),
-          SilaCelebrationReward(
-            icon: Icons.trending_up_rounded,
-            label: strings.rankingPointBonus(
-              CompetitionRewards.weeklyChampionRankingPoints,
-            ),
+            label: strings.tokenBonus(_championTokenReward),
           ),
           SilaCelebrationReward(
             icon: Icons.military_tech_rounded,

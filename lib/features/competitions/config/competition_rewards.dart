@@ -4,31 +4,18 @@ class CompetitionRewards {
   // ============================================================
   // TOKENS
   //
-  // Spendable KinQuest currency.
-  // These can later be used for Family Wishes.
+  // Spendable Family Tokens for official competition prizes.
+  // Higher placements always receive more. Quick Play never pays these.
   // ============================================================
 
   static const int dailyWinnerTokens = 10;
+  static const int dailyRunnerUpTokens = 4;
   static const int weeklyChampionTokens = 50;
+  static const int weeklyRunnerUpTokens = 20;
+  static const int weeklyThirdPlaceTokens = 10;
   static const int monthlyChampionTokens = 100;
-
-  // ============================================================
-  // PERMANENT RANKING POINTS
-  //
-  // These are never spent.
-  // They represent official competitive performance.
-  // ============================================================
-
-  static const int dailyWinnerRankingPoints = 10;
-  static const int dailyRunnerUpRankingPoints = 4;
-
-  static const int weeklyChampionRankingPoints = 40;
-  static const int weeklyRunnerUpRankingPoints = 20;
-  static const int weeklyThirdPlaceRankingPoints = 10;
-
-  static const int monthlyChampionRankingPoints = 100;
-  static const int monthlyRunnerUpRankingPoints = 50;
-  static const int monthlySemifinalistRankingPoints = 20;
+  static const int monthlyRunnerUpTokens = 50;
+  static const int monthlySemifinalistTokens = 20;
 
   // ============================================================
   // WEEKLY CHAMPIONSHIP ROUND POINTS
